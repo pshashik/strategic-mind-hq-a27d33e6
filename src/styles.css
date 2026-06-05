@@ -155,6 +155,9 @@
   --sidebar-ring: oklch(0.7 0 0);
   --bg-grad-1: transparent;
   --bg-grad-2: transparent;
+  --glass-bg-1: oklch(1 0 0);
+  --glass-bg-2: oklch(0.99 0 0);
+  --glass-border: oklch(0.9 0 0);
 }
 
 @layer base {
