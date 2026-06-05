@@ -88,10 +88,10 @@ function Simulator() {
               return (
                 <article key={c.key} className="glass-card rounded-xl p-5 flex flex-col">
                   <header className="flex items-center justify-between mb-3">
-                    <h2 className={`font-semibold flex items-center gap-2 text-${c.color}`}><Icon className="size-4" /> {c.title}</h2>
-                    <span className={`text-xs px-2 py-0.5 rounded bg-${c.color}/10 border border-${c.color}/30 text-${c.color}`}>{c.prob}%</span>
+                    <h2 className={`font-semibold flex items-center gap-2 ${c.text}`}><Icon className="size-4" /> {c.title}</h2>
+                    <span className={`text-xs px-2 py-0.5 rounded border ${c.bg} ${c.border} ${c.text}`}>{c.prob}%</span>
                   </header>
-                  <div className={`h-1 rounded-full bg-${c.color} mb-4 opacity-80`} />
+                  <div className={`h-1 rounded-full mb-4 opacity-80 ${c.bar}`} />
                   <p className="text-sm text-foreground/90 leading-relaxed">{c.body}</p>
                 </article>
               );
