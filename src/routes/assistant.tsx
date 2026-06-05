@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, FileText, ExternalLink, Sparkles, AlertCircle, Loader2 } from "lucide-react";
-import { GoogleGenAI } from "@google/genai";
+import { useServerFn } from "@tanstack/react-start";
+import { askGemini } from "@/lib/gemini.functions";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
