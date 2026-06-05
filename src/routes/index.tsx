@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, riskColor } from "@/components/AppLayout";
 import { breakingNews, topRisks, trendingCountries, strategicAlerts, executiveSummary } from "@/lib/mock-data";
 import { AlertTriangle, TrendingUp, Sparkles, Activity, ArrowUpRight } from "lucide-react";
+import { LatestIntelligenceFeed } from "@/components/LatestIntelligenceFeed";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard — StrategicMind AI" }] }),
@@ -128,6 +129,8 @@ function Dashboard() {
             </ul>
           </section>
         </div>
+
+        <LatestIntelligenceFeed />
       </div>
     </AppLayout>
   );
