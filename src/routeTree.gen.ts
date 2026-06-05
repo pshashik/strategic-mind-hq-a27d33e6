@@ -9,8 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SimulatorRouteImport } from './routes/simulator'
+import { Route as RiskMapRouteImport } from './routes/risk-map'
+import { Route as CountryRouteImport } from './routes/country'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SimulatorRoute = SimulatorRouteImport.update({
+  id: '/simulator',
+  path: '/simulator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RiskMapRoute = RiskMapRouteImport.update({
+  id: '/risk-map',
+  path: '/risk-map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountryRoute = CountryRouteImport.update({
+  id: '/country',
+  path: '/country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +43,72 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/country': typeof CountryRoute
+  '/risk-map': typeof RiskMapRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/country': typeof CountryRoute
+  '/risk-map': typeof RiskMapRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/country': typeof CountryRoute
+  '/risk-map': typeof RiskMapRoute
+  '/simulator': typeof SimulatorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
+  id: '__root__' | '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
+  CountryRoute: typeof CountryRoute
+  RiskMapRoute: typeof RiskMapRoute
+  SimulatorRoute: typeof SimulatorRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/simulator': {
+      id: '/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof SimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/risk-map': {
+      id: '/risk-map'
+      path: '/risk-map'
+      fullPath: '/risk-map'
+      preLoaderRoute: typeof RiskMapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/country': {
+      id: '/country'
+      path: '/country'
+      fullPath: '/country'
+      preLoaderRoute: typeof CountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,17 +121,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
+  CountryRoute: CountryRoute,
+  RiskMapRoute: RiskMapRoute,
+  SimulatorRoute: SimulatorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
