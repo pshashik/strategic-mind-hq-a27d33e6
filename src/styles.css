@@ -119,6 +119,9 @@
   --sidebar-ring: oklch(0.55 0.17 215);
   --bg-grad-1: oklch(0.85 0.07 220 / 0.45);
   --bg-grad-2: oklch(0.88 0.07 270 / 0.35);
+  --glass-bg-1: oklch(1 0 0 / 0.85);
+  --glass-bg-2: oklch(0.985 0.005 250 / 0.75);
+  --glass-border: oklch(0.88 0.01 250 / 0.9);
 }
 
 /* Standard neutral theme */
