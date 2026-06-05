@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, MessageSquare, Globe2, Flag, GitBranch, Radar, Search, Bell } from "lucide-react";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "./theme-toggle";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -65,7 +66,8 @@ export function AppLayout({ children }: { children?: ReactNode }) {
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button className="relative p-2 rounded-md hover:bg-accent/40">
               <Bell className="size-4" />
               <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-risk-critical" />
