@@ -34,9 +34,9 @@ function Simulator() {
 
   const cards = result
     ? [
-        { key: "best", title: "Best Case", icon: TrendingUp, color: "risk-low", body: result.best, prob: result.probabilities[0] },
-        { key: "likely", title: "Most Likely Case", icon: Scale, color: "risk-medium", body: result.likely, prob: result.probabilities[1] },
-        { key: "worst", title: "Worst Case", icon: AlertOctagon, color: "risk-critical", body: result.worst, prob: result.probabilities[2] },
+        { key: "best", title: "Best Case", icon: TrendingUp, text: "text-risk-low", bg: "bg-risk-low/10", border: "border-risk-low/30", bar: "bg-risk-low", body: result.best, prob: result.probabilities[0] },
+        { key: "likely", title: "Most Likely Case", icon: Scale, text: "text-risk-medium", bg: "bg-risk-medium/10", border: "border-risk-medium/30", bar: "bg-risk-medium", body: result.likely, prob: result.probabilities[1] },
+        { key: "worst", title: "Worst Case", icon: AlertOctagon, text: "text-risk-critical", bg: "bg-risk-critical/10", border: "border-risk-critical/30", bar: "bg-risk-critical", body: result.worst, prob: result.probabilities[2] },
       ]
     : [];
 
