@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Moon, Sun, Monitor, Palette, Check } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,7 +19,9 @@ const options: { value: Theme; label: string; icon: typeof Sun }[] = [
 
 export function ThemeToggle() {
   const { theme, setTheme, resolved } = useTheme();
-  const Active = resolved === "dark" ? Moon : resolved === "light" ? Sun : Palette;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const Active = !mounted ? Moon : resolved === "dark" ? Moon : resolved === "light" ? Sun : Palette;
 
   return (
     <DropdownMenu>
