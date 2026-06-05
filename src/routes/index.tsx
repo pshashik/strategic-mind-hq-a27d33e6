@@ -129,6 +129,8 @@ function Dashboard() {
             </ul>
           </section>
         </div>
+
+        <LatestIntelligenceFeed />
       </div>
     </AppLayout>
   );
