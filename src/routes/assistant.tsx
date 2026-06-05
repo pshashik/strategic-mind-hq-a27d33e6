@@ -15,11 +15,6 @@ export const Route = createFileRoute("/assistant")({
 interface Source { title: string; outlet: string }
 interface Message { role: "user" | "ai"; content: string; sources?: Source[] }
 
-const SYSTEM_INSTRUCTION = `You are StrategicMind AI, a geopolitical intelligence analyst. Respond like an official intelligence briefing:
-- Use clean markdown: **bold** for key terms, bullet lists for findings, numbered lists for sequences.
-- Be concise, analytical, and evidence-driven.
-- Structure: brief executive line, then key points, then implications.
-- Avoid speculation unless explicitly asked for scenarios.`;
 
 const initial: Message[] = [
   {
