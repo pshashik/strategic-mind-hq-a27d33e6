@@ -48,3 +48,80 @@ export const askGemini = createServerFn({ method: "POST" })
       return { text: "", error: msg };
     }
   });
+
+const SimInputSchema = z.object({
+  scenario: z.string().min(5).max(2000),
+});
+
+export interface ScenarioResult {
+  bestCase: string;
+  mostLikely: string;
+  worstCase: string;
+  economicImpact: string;
+  riskScore: number;
+  summary?: string;
+}
+
+const SIM_INSTRUCTION = `You are StrategicMind AI, a senior geopolitical risk analyst.
+Analyze the user's geopolitical scenario and respond ONLY with a valid JSON object (no markdown fences, no prose) matching this exact shape:
+{
+  "bestCase": string,            // 2-4 sentences describing the best plausible outcome
+  "mostLikely": string,          // 2-4 sentences describing the most probable outcome
+  "worstCase": string,           // 2-4 sentences describing the worst plausible outcome
+  "economicImpact": string,      // 2-4 sentences on markets, supply chains, commodities, currencies
+  "riskScore": number,           // overall severity 0-100 (higher = more dangerous)
+  "summary": string              // one-line executive headline
+}
+Be concise, evidence-driven, and analytical. Do not include any text outside the JSON.`;
+
+function extractJson(text: string): string {
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) return fence[1].trim();
+  const first = text.indexOf("{");
+  const last = text.lastIndexOf("}");
+  if (first !== -1 && last > first) return text.slice(first, last + 1);
+  return text.trim();
+}
+
+export const simulateScenario = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SimInputSchema.parse(input))
+  .handler(async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
+    }
+
+    try {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey });
+
+      const res = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
+        config: {
+          systemInstruction: SIM_INSTRUCTION,
+          responseMimeType: "application/json",
+        },
+      });
+
+      const text = res.text ?? "";
+      if (!text) return { result: null, error: "No response received." };
+
+      const parsed = JSON.parse(extractJson(text)) as Partial<ScenarioResult>;
+      const score = Math.max(0, Math.min(100, Math.round(Number(parsed.riskScore ?? 50))));
+      const result: ScenarioResult = {
+        bestCase: String(parsed.bestCase ?? "").trim(),
+        mostLikely: String(parsed.mostLikely ?? "").trim(),
+        worstCase: String(parsed.worstCase ?? "").trim(),
+        economicImpact: String(parsed.economicImpact ?? "").trim(),
+        riskScore: score,
+        summary: parsed.summary ? String(parsed.summary).trim() : undefined,
+      };
+      return { result, error: null };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Request failed";
+      console.error("simulateScenario error:", msg);
+      return { result: null, error: msg };
+    }
+  });
+
