@@ -36,7 +36,7 @@ function Assistant() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+  const ask = useServerFn(askGemini);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -50,46 +50,22 @@ function Assistant() {
     setInput("");
     setError(null);
 
-    if (!apiKey) {
-      setError("Gemini API key not configured. Set VITE_GEMINI_API_KEY in your environment.");
-      return;
-    }
+    const history = messages
+      .filter((m) => m !== initial[0])
+      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("model" as const), content: m.content }));
 
-    const history = messages.filter((m) => !(m === initial[0]));
     setMessages((m) => [...m, { role: "user", content: q }, { role: "ai", content: "" }]);
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey });
-      const contents = [
-        ...history.map((m) => ({
-          role: m.role === "user" ? "user" : "model",
-          parts: [{ text: m.content }],
-        })),
-        { role: "user", parts: [{ text: q }] },
-      ];
-
-      const stream = await ai.models.generateContentStream({
-        model: "gemini-2.5-flash",
-        contents,
-        config: { systemInstruction: SYSTEM_INSTRUCTION },
-      });
-
-      let acc = "";
-      for await (const chunk of stream) {
-        const t = chunk.text;
-        if (!t) continue;
-        acc += t;
+      const res = await ask({ data: { history, question: q } });
+      if (res.error || !res.text) {
+        setError(res.error || "No response received.");
+        setMessages((m) => m.slice(0, -1));
+      } else {
         setMessages((m) => {
           const copy = [...m];
-          copy[copy.length - 1] = { role: "ai", content: acc };
-          return copy;
-        });
-      }
-      if (!acc) {
-        setMessages((m) => {
-          const copy = [...m];
-          copy[copy.length - 1] = { role: "ai", content: "_No response received._" };
+          copy[copy.length - 1] = { role: "ai", content: res.text };
           return copy;
         });
       }
@@ -101,6 +77,7 @@ function Assistant() {
       setLoading(false);
     }
   };
+
 
   const suggestions = [
     "Compare Iran-Israel escalation pathways",
