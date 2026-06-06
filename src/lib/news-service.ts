@@ -1,6 +1,6 @@
-import { getLatestNews } from "./news.functions";
+import { getLatestNews, type NewsItem } from "./news.functions";
 
-export type { NewsItem } from "./news.functions";
+export type { NewsItem };
 
 export interface LocalGeopoliticalRisk {
   riskName: string;
