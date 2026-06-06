@@ -67,9 +67,9 @@ function writeCache(article: NewsItem, result: ArticleAnalysis): void {
   }
 }
 
-function formatPubDate(iso?: string): string {
-  if (!iso) return "Unknown date";
-  const d = new Date(iso);
+function formatPubDate(ts?: number): string {
+  if (!ts) return "Unknown date";
+  const d = new Date(ts);
   if (Number.isNaN(d.getTime())) return "Unknown date";
   return d.toLocaleString(undefined, {
     dateStyle: "medium",
