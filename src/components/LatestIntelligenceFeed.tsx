@@ -12,6 +12,8 @@ export function LatestIntelligenceFeed() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<NewsItem | null>(null);
+
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true);
