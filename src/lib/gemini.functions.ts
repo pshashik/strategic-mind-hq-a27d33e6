@@ -125,3 +125,89 @@ export const simulateScenario = createServerFn({ method: "POST" })
     }
   });
 
+const ArticleInputSchema = z.object({
+  title: z.string().min(1).max(1000),
+  summary: z.string().max(4000).optional().default(""),
+});
+
+export interface ArticleAnalysis {
+  executiveSummary: string;
+  countriesInvolved: string[];
+  strategicImportance: number;
+  riskScore: number;
+  politicalImpact: string;
+  economicImpact: string;
+  militaryImpact: string;
+  diplomaticImpact: string;
+}
+
+const ARTICLE_INSTRUCTION = `You are a geopolitical intelligence analyst. Analyze this news article. Provide:
+- Executive Summary
+- Countries Involved
+- Strategic Importance Score (1-10)
+- Risk Score (1-10)
+- Political Impact
+- Economic Impact
+- Military Impact
+- Diplomatic Impact
+
+Respond ONLY with a valid JSON object (no markdown, no prose) matching this exact shape:
+{
+  "executiveSummary": string,
+  "countriesInvolved": string[],
+  "strategicImportance": number,
+  "riskScore": number,
+  "politicalImpact": string,
+  "economicImpact": string,
+  "militaryImpact": string,
+  "diplomaticImpact": string
+}`;
+
+export const analyzeArticle = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => ArticleInputSchema.parse(input))
+  .handler(async ({ data }): Promise<{ result: ArticleAnalysis | null; error: string | null }> => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
+    }
+    try {
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({ apiKey });
+      const res = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: `Article Title:\n${data.title}\n\nArticle Summary:\n${data.summary || "(no summary provided)"}` }],
+          },
+        ],
+        config: {
+          systemInstruction: ARTICLE_INSTRUCTION,
+          responseMimeType: "application/json",
+        },
+      });
+      const text = res.text ?? "";
+      if (!text) return { result: null, error: "No response received." };
+      const parsed = JSON.parse(extractJson(text)) as Partial<ArticleAnalysis>;
+      const clamp10 = (n: unknown) => Math.max(1, Math.min(10, Math.round(Number(n ?? 5))));
+      const result: ArticleAnalysis = {
+        executiveSummary: String(parsed.executiveSummary ?? "").trim(),
+        countriesInvolved: Array.isArray(parsed.countriesInvolved)
+          ? parsed.countriesInvolved.map((c) => String(c).trim()).filter(Boolean).slice(0, 20)
+          : [],
+        strategicImportance: clamp10(parsed.strategicImportance),
+        riskScore: clamp10(parsed.riskScore),
+        politicalImpact: String(parsed.politicalImpact ?? "").trim(),
+        economicImpact: String(parsed.economicImpact ?? "").trim(),
+        militaryImpact: String(parsed.militaryImpact ?? "").trim(),
+        diplomaticImpact: String(parsed.diplomaticImpact ?? "").trim(),
+      };
+      return { result, error: null };
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Request failed";
+      console.error("analyzeArticle error:", msg);
+      return { result: null, error: msg };
+    }
+  });
+
+

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Newspaper, RefreshCw, ExternalLink } from "lucide-react";
+import { Newspaper, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
 import { fetchAllNews, formatRelative, type NewsItem } from "@/lib/news-service";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArticleAnalysisModal } from "@/components/ArticleAnalysisModal";
+
 
 const REFRESH_MS = 30 * 60 * 1000;
 
@@ -10,6 +12,8 @@ export function LatestIntelligenceFeed() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<NewsItem | null>(null);
+
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true);
@@ -71,7 +75,8 @@ export function LatestIntelligenceFeed() {
             return (
               <li
                 key={n.id}
-                className="group p-3 rounded-md border border-border/50 bg-background/40 hover:bg-accent/30 transition-colors"
+                onClick={() => setSelected(n)}
+                className="group p-3 rounded-md border border-border/50 bg-background/40 hover:bg-accent/30 hover:border-primary/40 transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-between gap-2 mb-1.5">
                   <span
@@ -87,25 +92,35 @@ export function LatestIntelligenceFeed() {
                     {formatRelative(n.pubDate)}
                   </span>
                 </div>
-                <a
-                  href={n.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium leading-snug hover:text-primary inline-flex items-start gap-1"
-                >
-                  <span>{n.title}</span>
-                  <ExternalLink className="size-3 mt-1 opacity-0 group-hover:opacity-70 shrink-0" />
-                </a>
+                <h3 className="text-sm font-medium leading-snug group-hover:text-primary">
+                  {n.title}
+                </h3>
                 {n.summary && (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                     {n.summary}
                   </p>
                 )}
+                <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                  <span className="inline-flex items-center gap-1 text-primary opacity-80 group-hover:opacity-100">
+                    <Sparkles className="size-3" /> Analyze
+                  </span>
+                  <a
+                    href={n.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                  >
+                    Open <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </li>
             );
           })}
         </ul>
       )}
+      <ArticleAnalysisModal article={selected} onOpenChange={(o) => !o && setSelected(null)} />
     </section>
   );
 }
+
