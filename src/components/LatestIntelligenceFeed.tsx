@@ -1,40 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Newspaper, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
-import { fetchAllNews, formatRelative, type NewsItem } from "@/lib/news-service";
+import { formatRelative, type NewsItem } from "@/lib/news-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArticleAnalysisModal } from "@/components/ArticleAnalysisModal";
 
+interface Props {
+  articles: NewsItem[];
+  loading: boolean;
+  refreshing: boolean;
+  error: string | null;
+  onRefresh: () => void;
+}
 
-const REFRESH_MS = 30 * 60 * 1000;
-
-export function LatestIntelligenceFeed() {
-  const [items, setItems] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function LatestIntelligenceFeed({ articles, loading, refreshing, error, onRefresh }: Props) {
   const [selected, setSelected] = useState<NewsItem | null>(null);
-
-
-  const load = useCallback(async (initial = false) => {
-    if (initial) setLoading(true);
-    else setRefreshing(true);
-    try {
-      const data = await fetchAllNews();
-      setItems(data);
-      setError(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load feed");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load(true);
-    const id = setInterval(() => load(false), REFRESH_MS);
-    return () => clearInterval(id);
-  }, [load]);
 
   return (
     <section className="glass-card rounded-xl p-5">
@@ -43,7 +22,7 @@ export function LatestIntelligenceFeed() {
           <Newspaper className="size-4 text-primary" /> Latest Intelligence Feed
         </h2>
         <button
-          onClick={() => load(false)}
+          onClick={onRefresh}
           disabled={refreshing || loading}
           className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border/60 hover:bg-accent/40 disabled:opacity-60"
         >
@@ -70,7 +49,7 @@ export function LatestIntelligenceFeed() {
         </ul>
       ) : (
         <ul className="space-y-2.5 max-h-[640px] overflow-y-auto pr-1">
-          {items.map((n) => {
+          {articles.map((n) => {
             const isBBC = n.source === "BBC News";
             return (
               <li
@@ -123,4 +102,3 @@ export function LatestIntelligenceFeed() {
     </section>
   );
 }
-

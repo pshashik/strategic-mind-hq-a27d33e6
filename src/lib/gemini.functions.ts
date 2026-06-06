@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { GEMINI_FLASH_MODEL } from "@/lib/gemini-feed";
 
 const SYSTEM_INSTRUCTION = `You are StrategicMind AI, a geopolitical intelligence analyst. Respond like an official intelligence briefing:
 - Use clean markdown: **bold** for key terms, bullet lists for findings, numbered lists for sequences.
@@ -35,7 +36,7 @@ export const askGemini = createServerFn({ method: "POST" })
       ];
 
       const res = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: GEMINI_FLASH_MODEL,
         contents,
         config: { systemInstruction: SYSTEM_INSTRUCTION },
       });
@@ -96,7 +97,7 @@ export const simulateScenario = createServerFn({ method: "POST" })
       const ai = new GoogleGenAI({ apiKey });
 
       const res = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: GEMINI_FLASH_MODEL,
         contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
         config: {
           systemInstruction: SIM_INSTRUCTION,
@@ -174,7 +175,7 @@ export const analyzeArticle = createServerFn({ method: "POST" })
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({ apiKey });
       const res = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: GEMINI_FLASH_MODEL,
         contents: [
           {
             role: "user",
