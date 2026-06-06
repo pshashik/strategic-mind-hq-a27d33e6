@@ -233,7 +233,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
                 <div className="flex items-center justify-between gap-2 pt-1">
                   <span className="text-[11px] text-muted-foreground">
                     {cachedAt
-                      ? `Cached ${formatPubDate(new Date(cachedAt).toISOString())}`
+                      ? `Cached ${formatPubDate(cachedAt)}`
                       : ""}
                   </span>
                   <button
