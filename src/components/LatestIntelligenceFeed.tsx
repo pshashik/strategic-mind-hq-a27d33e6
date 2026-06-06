@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Newspaper, RefreshCw, ExternalLink } from "lucide-react";
+import { Newspaper, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
 import { fetchAllNews, formatRelative, type NewsItem } from "@/lib/news-service";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArticleAnalysisModal } from "@/components/ArticleAnalysisModal";
+
 
 const REFRESH_MS = 30 * 60 * 1000;
 
