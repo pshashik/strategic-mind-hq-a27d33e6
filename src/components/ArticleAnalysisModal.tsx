@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +16,11 @@ import {
   Globe2,
   Landmark,
   LineChart,
+  Loader2,
   Shield,
   Sparkles,
   Swords,
+  CalendarClock,
 } from "lucide-react";
 import type { NewsItem } from "@/lib/news-service";
 
@@ -27,35 +29,121 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const CACHE_PREFIX = "article-analysis:";
+
+interface CacheEntry {
+  cachedAt: number;
+  result: ArticleAnalysis;
+}
+
+function cacheKey(article: NewsItem): string {
+  return `${CACHE_PREFIX}${article.link || article.id}`;
+}
+
+function readCache(article: NewsItem): ArticleAnalysis | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(cacheKey(article));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CacheEntry;
+    if (!parsed?.cachedAt || !parsed.result) return null;
+    if (Date.now() - parsed.cachedAt > CACHE_TTL_MS) return null;
+    return parsed.result;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(article: NewsItem, result: ArticleAnalysis): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      cacheKey(article),
+      JSON.stringify({ cachedAt: Date.now(), result } satisfies CacheEntry),
+    );
+  } catch {
+    // ignore
+  }
+}
+
+function formatPubDate(ts?: number): string {
+  if (!ts) return "Unknown date";
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return "Unknown date";
+  return d.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
   const [result, setResult] = useState<ArticleAnalysis | null>(null);
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const analyze = useServerFn(analyzeArticle);
 
+  // Reset state when article changes; prefill from cache if present (no API call).
   useEffect(() => {
-    if (!article) return;
-    let cancelled = false;
     setResult(null);
+    setCachedAt(null);
     setError(null);
+    setLoading(false);
+    if (!article) return;
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(cacheKey(article));
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as CacheEntry;
+      if (!parsed?.cachedAt || !parsed.result) return;
+      if (Date.now() - parsed.cachedAt > CACHE_TTL_MS) return;
+      setResult(parsed.result);
+      setCachedAt(parsed.cachedAt);
+    } catch {
+      // ignore
+    }
+  }, [article]);
+
+  const pubDateLabel = useMemo(() => formatPubDate(article?.pubDate), [article]);
+
+  async function runAnalysis(force = false) {
+    if (!article) return;
+    if (!force) {
+      const cached = readCache(article);
+      if (cached) {
+        setResult(cached);
+        setError(null);
+        return;
+      }
+    }
     setLoading(true);
-    analyze({ data: { title: article.title, summary: article.summary ?? "" } })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.error || !res.result) setError(res.error ?? "Failed to analyze article.");
-        else setResult(res.result);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Failed to analyze article.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+    setError(null);
+    try {
+      const res = await analyze({
+        data: { title: article.title, summary: article.summary ?? "" },
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [article, analyze]);
+      if (res.error || !res.result) {
+        const msg = res.error ?? "Failed to analyze article.";
+        const quota = /quota|rate|429/i.test(msg)
+          ? "API quota reached. Please try again later."
+          : msg;
+        setError(quota);
+      } else {
+        setResult(res.result);
+        setCachedAt(Date.now());
+        writeCache(article, res.result);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to analyze article.";
+      const quota = /quota|rate|429/i.test(msg)
+        ? "API quota reached. Please try again later."
+        : msg;
+      setError(quota);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Dialog open={!!article} onOpenChange={onOpenChange}>
@@ -64,32 +152,99 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
           <>
             <DialogHeader>
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                <Sparkles className="size-3.5" /> Intelligence Analysis
+                <Sparkles className="size-3.5" /> Intelligence Report
               </div>
-              <DialogTitle className="text-lg leading-snug pr-6">{article.title}</DialogTitle>
-              <DialogDescription className="flex items-center gap-2">
-                <span>{article.source}</span>
-                <a
-                  href={article.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
-                >
-                  Open article <ExternalLink className="size-3" />
-                </a>
+              <DialogTitle className="text-lg leading-snug pr-6">
+                {article.title}
+              </DialogTitle>
+              <DialogDescription asChild>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span className="inline-flex items-center gap-1 text-foreground/80">
+                    <span className="font-medium">{article.source}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <CalendarClock className="size-3" /> {pubDateLabel}
+                  </span>
+                  <a
+                    href={article.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline"
+                  >
+                    Open article <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </DialogDescription>
             </DialogHeader>
 
-            {loading && <LoadingState />}
+            {article.summary && (
+              <section className="rounded-lg border border-border/60 bg-background/40 p-4">
+                <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Article Summary
+                </h3>
+                <p className="text-sm leading-relaxed text-foreground/90">
+                  {article.summary}
+                </p>
+              </section>
+            )}
 
-            {error && !loading && (
-              <div className="flex items-start gap-2 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm text-destructive">
-                <AlertCircle className="size-4 mt-0.5 shrink-0" />
-                <span>{error}</span>
+            {!result && !loading && (
+              <div className="flex flex-col items-center gap-2 py-2">
+                <button
+                  onClick={() => runAnalysis(false)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-gradient-to-r from-primary to-primary/70 text-primary-foreground text-sm font-medium shadow-sm hover:opacity-90 transition"
+                >
+                  <Sparkles className="size-4" /> Analyze Intelligence Report
+                </button>
+                <p className="text-[11px] text-muted-foreground">
+                  Results are cached for 24 hours.
+                </p>
               </div>
             )}
 
-            {result && !loading && <Report result={result} />}
+            {loading && (
+              <>
+                <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin text-primary" />
+                  Generating intelligence report…
+                </div>
+                <LoadingState />
+              </>
+            )}
+
+            {error && !loading && (
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm text-destructive">
+                  <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </div>
+                <button
+                  onClick={() => runAnalysis(true)}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-border/60 text-sm hover:bg-accent/40"
+                >
+                  <Sparkles className="size-4" /> Retry analysis
+                </button>
+              </div>
+            )}
+
+            {result && !loading && (
+              <>
+                <Report result={result} />
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <span className="text-[11px] text-muted-foreground">
+                    {cachedAt
+                      ? `Cached ${formatPubDate(cachedAt)}`
+                      : ""}
+                  </span>
+                  <button
+                    onClick={() => runAnalysis(true)}
+                    className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border/60 hover:bg-accent/40"
+                  >
+                    <Sparkles className="size-3.5" /> Re-run analysis
+                  </button>
+                </div>
+              </>
+            )}
           </>
         )}
       </DialogContent>
