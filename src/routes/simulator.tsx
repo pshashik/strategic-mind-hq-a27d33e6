@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { simulateScenario, type ScenarioResult } from "@/lib/gemini.functions";
+import { classifyAIError, aiErrorMessage } from "@/lib/ai-errors";
 
 export const Route = createFileRoute("/simulator")({
   head: () => ({ meta: [{ title: "Scenario Simulator — StrategicMind AI" }] }),
