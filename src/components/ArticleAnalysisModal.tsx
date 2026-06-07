@@ -9,6 +9,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useServerFn } from "@tanstack/react-start";
 import { analyzeArticle, type ArticleAnalysis } from "@/lib/gemini.functions";
+import { classifyAIError, aiErrorMessage } from "@/lib/ai-errors";
+import { generateLocalArticleAnalysis } from "@/lib/local-article-analysis";
 import {
   AlertCircle,
   ExternalLink,
