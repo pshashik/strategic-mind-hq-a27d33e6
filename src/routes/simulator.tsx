@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { simulateScenario, type ScenarioResult } from "@/lib/gemini.functions";
+import { simulateScenario, type ScenarioResult } from "@/lib/intelligence.functions";
 import { classifyAIError, aiErrorMessage } from "@/lib/ai-errors";
 
 export const Route = createFileRoute("/simulator")({
@@ -75,7 +75,7 @@ function Simulator() {
           </h1>
           <p className="text-sm text-muted-foreground">
             Model trajectories across best, most-likely, and worst-case outcomes — powered by
-            Gemini.
+            intelligence heuristics.
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import type { ArticleAnalysis } from "@/lib/gemini.functions";
+import type { ArticleAnalysis } from "@/lib/intelligence.functions";
 import { buildExecutiveSummaryMetrics } from "@/lib/simple-briefing";
 
 interface ArticleLike {
