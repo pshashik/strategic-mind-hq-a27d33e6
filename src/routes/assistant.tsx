@@ -12,7 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { askGemini } from "@/lib/gemini.functions";
+import { askAssistant } from "@/lib/intelligence.functions";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -46,7 +46,7 @@ function Assistant() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const ask = useServerFn(askGemini);
+  const ask = useServerFn(askAssistant);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -108,11 +108,11 @@ function Assistant() {
                 <Sparkles className="size-4 text-primary" /> Research Assistant
               </h1>
               <p className="text-xs text-muted-foreground">
-                Ask geopolitical questions. Powered by Gemini 2.5 Flash.
+                Ask geopolitical questions with local intelligence heuristics.
               </p>
             </div>
             <span className="text-[11px] px-2 py-0.5 rounded border border-primary/30 text-primary bg-primary/10">
-              gemini-2.5-flash
+              local-analysis
             </span>
           </header>
 

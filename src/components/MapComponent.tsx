@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { MapCountryRisk } from "@/lib/risk-map";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
+import type { Layer, PathOptions } from "leaflet";
 
 interface MapComponentProps {
   countries: MapCountryRisk[];
@@ -27,17 +29,69 @@ const tooltipStyle = `
     white-space: normal !important;
     max-width: 200px;
   }
+  .leaflet-container {
+    background: hsl(var(--background));
+  }
   .leaflet-tooltip-pane {
     z-index: 650 !important;
   }
 `;
 
-export default function MapComponent({
+type CountryFeature = Feature<Geometry, Record<string, unknown>>;
+
+function featureCode(feature: CountryFeature): string {
+  const props = feature.properties ?? {};
+  return String(
+    props.iso_a3 ??
+      props.ISO_A3 ??
+      props.ADM0_A3 ??
+      props["ISO3166-1-Alpha-3"] ??
+      props["Alpha-3"] ??
+      feature.id ??
+      "",
+  ).toUpperCase();
+}
+
+function featureName(feature: CountryFeature): string {
+  const props = feature.properties ?? {};
+  return String(props.name ?? props.NAME ?? props.ADMIN ?? props.name_long ?? "Unknown Country");
+}
+
+function featureRegion(feature: CountryFeature): string {
+  const props = feature.properties ?? {};
+  return String(props.subregion ?? props.SUBREGION ?? props.continent ?? props.CONTINENT ?? "Global");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function riskFillColor(country?: MapCountryRisk): string {
+  if (!country || country.articleCount === 0) return "#64748b";
+  if (country.riskScore >= 7) return "#ef4444";
+  if (country.riskScore >= 4) return "#eab308";
+  return "#10b981";
+}
+
+function MapComponent({
   countries,
   onSelect,
   selectedCountryCode,
 }: MapComponentProps) {
-  const [geoJsonData, setGeoJsonData] = useState<any>(null);
+  const [geoJsonData, setGeoJsonData] = useState<FeatureCollection | null>(null);
+
+  const riskLookup = useMemo(() => {
+    const lookup = new Map<string, MapCountryRisk>();
+    for (const country of countries) {
+      lookup.set(country.code3.toUpperCase(), country);
+    }
+    return lookup;
+  }, [countries]);
 
   useEffect(() => {
     // Inject style for tooltip custom rendering
@@ -51,7 +105,7 @@ export default function MapComponent({
         if (!res.ok) throw new Error("Failed to load map data");
         return res.json();
       })
-      .then((data) => {
+      .then((data: FeatureCollection) => {
         setGeoJsonData(data);
       })
       .catch((err) => {
@@ -75,75 +129,41 @@ export default function MapComponent({
     );
   }
 
-  // Build a lookup map by ISO 3-letter code
-  const riskLookup = new Map<string, MapCountryRisk>();
-  for (const c of countries) {
-    riskLookup.set(c.code3.toUpperCase(), c);
-  }
-
-  const getStyle = (feature: any) => {
-    const code = (
-      feature.properties?.iso_a3 ||
-      feature.properties?.ISO_A3 ||
-      feature.id ||
-      ""
-    )
-      .toString()
-      .toUpperCase();
-    const cData = riskLookup.get(code);
-
-    let color = "#334155"; // Gray for no/low risk default
-    let fillOpacity = 0.2;
-
-    if (cData && cData.articleCount > 0) {
-      fillOpacity = 0.55;
-      const score = cData.riskScore;
-      if (score >= 7) {
-        color = "#ef4444"; // Red (7-10)
-      } else if (score >= 4) {
-        color = "#eab308"; // Yellow (4-6)
-      } else {
-        color = "#10b981"; // Green (0-3)
-      }
-    }
-
-    const isSelected = selectedCountryCode === cData?.code;
+  const getStyle = (feature?: CountryFeature): PathOptions => {
+    const cData = feature ? riskLookup.get(featureCode(feature)) : undefined;
+    const hasData = !!cData && cData.articleCount > 0;
+    const isSelected = !!cData && selectedCountryCode === cData.code;
+    const fillOpacity = hasData ? 0.62 : 0.26;
 
     return {
-      fillColor: color,
-      weight: isSelected ? 2 : 1,
-      opacity: 0.8,
-      color: isSelected ? "#f8fafc" : "#475569",
-      fillOpacity: isSelected ? fillOpacity + 0.15 : fillOpacity,
+      fillColor: riskFillColor(cData),
+      weight: isSelected ? 2 : 0.75,
+      opacity: isSelected ? 1 : 0.75,
+      color: isSelected ? "#f8fafc" : "#334155",
+      fillOpacity: isSelected ? Math.min(fillOpacity + 0.16, 0.86) : fillOpacity,
     };
   };
 
-  const onEachFeature = (feature: any, layer: any) => {
-    const code = (
-      feature.properties?.iso_a3 ||
-      feature.properties?.ISO_A3 ||
-      feature.id ||
-      ""
-    )
-      .toString()
-      .toUpperCase();
+  const onEachFeature = (feature: CountryFeature, layer: Layer) => {
+    const code = featureCode(feature);
     const cData = riskLookup.get(code);
-
-    // If matching country exists, bind tooltip
-    const countryName = feature.properties?.name || feature.properties?.NAME || "Unknown Country";
+    const countryName = cData?.name ?? featureName(feature);
     const riskScore = cData ? cData.riskScore : 0;
     const articleCount = cData ? cData.articleCount : 0;
     const factors = cData && cData.topRiskFactors.length > 0
       ? cData.topRiskFactors.join(", ")
       : "None";
+    const latestHeadline = cData?.latestHeadline || "No matching feed headline";
+    const riskColor = riskScore >= 7 ? "#f87171" : riskScore >= 4 ? "#fbbf24" : "#34d399";
 
     const tooltipContent = `
       <div style="font-family: inherit;">
-        <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">${countryName}</div>
-        <div style="display: flex; flex-direction: column; gap: 2px;">
-          <div><span style="color: #94a3b8;">Risk Score:</span> <span style="font-weight: 600; color: ${riskScore >= 7 ? "#f87171" : riskScore >= 4 ? "#fbbf24" : "#34d399"};">${riskScore}/10</span></div>
+        <div style="font-weight: 700; font-size: 12px; margin-bottom: 5px;">${escapeHtml(countryName)}</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div><span style="color: #94a3b8;">Risk Score:</span> <span style="font-weight: 700; color: ${riskColor};">${riskScore}/10</span></div>
           <div><span style="color: #94a3b8;">Article Count:</span> <span>${articleCount}</span></div>
-          <div><span style="color: #94a3b8;">Risk Factors:</span> <span style="font-style: italic;">${factors}</span></div>
+          <div><span style="color: #94a3b8;">Top Risk Factors:</span> <span>${escapeHtml(factors)}</span></div>
+          <div><span style="color: #94a3b8;">Latest Headline:</span> <span>${escapeHtml(latestHeadline)}</span></div>
         </div>
       </div>
     `;
@@ -161,12 +181,11 @@ export default function MapComponent({
         if (cData) {
           onSelect(cData);
         } else {
-          // If a country without custom developments is clicked, provide a default object
           onSelect({
             code: code.slice(0, 2),
             code3: code,
             name: countryName,
-            region: feature.properties?.subregion || feature.properties?.continent || "Global",
+            region: featureRegion(feature),
             x: 0,
             y: 0,
             riskScore: 0,
@@ -174,19 +193,20 @@ export default function MapComponent({
             developments: [],
             articleCount: 0,
             topRiskFactors: [],
+            latestHeadline: "",
+            rawScore: 0,
           });
         }
       },
-      mouseover: (e: any) => {
+      mouseover: (e) => {
         const l = e.target;
         l.setStyle({
-          fillOpacity: 0.75,
+          fillOpacity: cData?.articleCount ? 0.82 : 0.38,
           weight: 2,
         });
       },
-      mouseout: (e: any) => {
+      mouseout: (e) => {
         const l = e.target;
-        // reset to default style
         l.setStyle(getStyle(feature));
       },
     });
@@ -206,13 +226,10 @@ export default function MapComponent({
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
-        <GeoJSON
-          key={selectedCountryCode || "default"}
-          data={geoJsonData}
-          style={getStyle}
-          onEachFeature={onEachFeature}
-        />
+        <GeoJSON key={selectedCountryCode || "default"} data={geoJsonData} style={getStyle} onEachFeature={onEachFeature} />
       </MapContainer>
     </div>
   );
 }
+
+export default memo(MapComponent);

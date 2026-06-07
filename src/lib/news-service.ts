@@ -8,7 +8,7 @@ export interface LocalGeopoliticalRisk {
   regionAffected: string;
 }
 
-/** Keyword-weight map for offline Top Risks when Gemini rate-limits (429). */
+/** Keyword-weight map for local Top Risks synthesis. */
 const RISK_SIGNALS: { pattern: RegExp; weight: number; region: string; label: string }[] = [
   {
     pattern: /gulf strikes?|strait of hormuz|houthi|red sea/i,
@@ -104,11 +104,11 @@ export function formatRelativeShort(ts: number): string {
   return `${days}d ago`;
 }
 
-/** Normalize Gemini or ISO timestamps into compact relative display. */
+/** Normalize feed or ISO timestamps into compact relative display. */
 export function formatAlertTimestamp(value: string, fallbackTs?: number): string {
   const s = value.trim();
   if (/^\d+[mhd]\s*ago$/i.test(s) || s.toLowerCase() === "just now") return s;
-  // Gemini often hallucinates ISO dates — prefer live article pubDate instead
+  // Prefer live article pubDate when upstream timestamps are placeholders.
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
     if (fallbackTs) return formatRelativeShort(fallbackTs);
     return "Just now";
@@ -121,7 +121,7 @@ export function formatAlertTimestamp(value: string, fallbackTs?: number): string
 
 /**
  * Lightweight local Top Risks fallback — scores keyword frequencies in the live RSS feed.
- * Used when Gemini returns HTTP 429 (rate limit).
+ * Used when remote feeds provide too little structured risk metadata.
  */
 export function computeLocalTopRisks(
   articles: Pick<NewsItem, "title" | "summary">[],
