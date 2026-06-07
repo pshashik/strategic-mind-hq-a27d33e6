@@ -51,12 +51,16 @@ function Simulator() {
     try {
       const res = await simulate({ data: { scenario: scenario.trim() } });
       if (res.error || !res.result) {
-        setError(res.error || "Simulation failed.");
+        const code = res.errorCode ?? classifyAIError(res.error);
+        console.error("[simulateScenario] failure", code, res.error);
+        setError(aiErrorMessage(code));
       } else {
         setResult(res.result);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Simulation failed.");
+      const code = classifyAIError(e);
+      console.error("[simulateScenario] threw", e);
+      setError(aiErrorMessage(code));
     } finally {
       setLoading(false);
     }
