@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { GEMINI_FLASH_MODEL } from "@/lib/gemini-feed";
+import { classifyAIError, type AIErrorCode } from "@/lib/ai-errors";
 
 const SYSTEM_INSTRUCTION = `You are StrategicMind AI, a geopolitical intelligence analyst. Respond like an official intelligence briefing:
 - Use clean markdown: **bold** for key terms, bullet lists for findings, numbered lists for sequences.
@@ -20,35 +21,40 @@ const InputSchema = z.object({
 
 export const askGemini = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { text: "", error: "GEMINI_API_KEY is not configured on the server." };
-    }
+  .handler(
+    async ({
+      data,
+    }): Promise<{ text: string; error: string | null; errorCode?: AIErrorCode }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { text: "", error: "missing-api-key", errorCode: "UNAUTHORIZED" };
+      }
 
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
 
-      const contents = [
-        ...data.history.map((m) => ({ role: m.role, parts: [{ text: m.content }] })),
-        { role: "user" as const, parts: [{ text: data.question }] },
-      ];
+        const contents = [
+          ...data.history.map((m) => ({ role: m.role, parts: [{ text: m.content }] })),
+          { role: "user" as const, parts: [{ text: data.question }] },
+        ];
 
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents,
-        config: { systemInstruction: SYSTEM_INSTRUCTION },
-      });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents,
+          config: { systemInstruction: SYSTEM_INSTRUCTION },
+        });
 
-      const text = res.text ?? "";
-      return { text, error: text ? null : "No response received." };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("askGemini error:", msg);
-      return { text: "", error: msg };
-    }
-  });
+        const text = res.text ?? "";
+        return { text, error: text ? null : "empty-response", errorCode: text ? undefined : "UNKNOWN" };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const code = classifyAIError(e);
+        console.error("askGemini error:", msg);
+        return { text: "", error: msg, errorCode: code };
+      }
+    },
+  );
 
 const SimInputSchema = z.object({
   scenario: z.string().min(5).max(2000),
@@ -86,45 +92,54 @@ function extractJson(text: string): string {
 
 export const simulateScenario = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SimInputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
-    }
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: ScenarioResult | null;
+      error: string | null;
+      errorCode?: AIErrorCode;
+    }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { result: null, error: "missing-api-key", errorCode: "UNAUTHORIZED" };
+      }
 
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
 
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
-        config: {
-          systemInstruction: SIM_INSTRUCTION,
-          responseMimeType: "application/json",
-        },
-      });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
+          config: {
+            systemInstruction: SIM_INSTRUCTION,
+            responseMimeType: "application/json",
+          },
+        });
 
-      const text = res.text ?? "";
-      if (!text) return { result: null, error: "No response received." };
+        const text = res.text ?? "";
+        if (!text) return { result: null, error: "empty-response", errorCode: "UNKNOWN" };
 
-      const parsed = JSON.parse(extractJson(text)) as Partial<ScenarioResult>;
-      const score = Math.max(0, Math.min(100, Math.round(Number(parsed.riskScore ?? 50))));
-      const result: ScenarioResult = {
-        bestCase: String(parsed.bestCase ?? "").trim(),
-        mostLikely: String(parsed.mostLikely ?? "").trim(),
-        worstCase: String(parsed.worstCase ?? "").trim(),
-        economicImpact: String(parsed.economicImpact ?? "").trim(),
-        riskScore: score,
-        summary: parsed.summary ? String(parsed.summary).trim() : undefined,
-      };
-      return { result, error: null };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("simulateScenario error:", msg);
-      return { result: null, error: msg };
-    }
-  });
+        const parsed = JSON.parse(extractJson(text)) as Partial<ScenarioResult>;
+        const score = Math.max(0, Math.min(100, Math.round(Number(parsed.riskScore ?? 50))));
+        const result: ScenarioResult = {
+          bestCase: String(parsed.bestCase ?? "").trim(),
+          mostLikely: String(parsed.mostLikely ?? "").trim(),
+          worstCase: String(parsed.worstCase ?? "").trim(),
+          economicImpact: String(parsed.economicImpact ?? "").trim(),
+          riskScore: score,
+          summary: parsed.summary ? String(parsed.summary).trim() : undefined,
+        };
+        return { result, error: null };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const code = classifyAIError(e);
+        console.error("simulateScenario error:", msg);
+        return { result: null, error: msg, errorCode: code };
+      }
+    },
+  );
 
 const ArticleInputSchema = z.object({
   title: z.string().min(1).max(1000),
@@ -166,54 +181,63 @@ Respond ONLY with a valid JSON object (no markdown, no prose) matching this exac
 
 export const analyzeArticle = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ArticleInputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: ArticleAnalysis | null; error: string | null }> => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
-    }
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: `Article Title:\n${data.title}\n\nArticle Summary:\n${data.summary || "(no summary provided)"}`,
-              },
-            ],
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: ArticleAnalysis | null;
+      error: string | null;
+      errorCode?: AIErrorCode;
+    }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { result: null, error: "missing-api-key", errorCode: "UNAUTHORIZED" };
+      }
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `Article Title:\n${data.title}\n\nArticle Summary:\n${data.summary || "(no summary provided)"}`,
+                },
+              ],
+            },
+          ],
+          config: {
+            systemInstruction: ARTICLE_INSTRUCTION,
+            responseMimeType: "application/json",
           },
-        ],
-        config: {
-          systemInstruction: ARTICLE_INSTRUCTION,
-          responseMimeType: "application/json",
-        },
-      });
-      const text = res.text ?? "";
-      if (!text) return { result: null, error: "No response received." };
-      const parsed = JSON.parse(extractJson(text)) as Partial<ArticleAnalysis>;
-      const clamp10 = (n: unknown) => Math.max(1, Math.min(10, Math.round(Number(n ?? 5))));
-      const result: ArticleAnalysis = {
-        executiveSummary: String(parsed.executiveSummary ?? "").trim(),
-        countriesInvolved: Array.isArray(parsed.countriesInvolved)
-          ? parsed.countriesInvolved
-              .map((c) => String(c).trim())
-              .filter(Boolean)
-              .slice(0, 20)
-          : [],
-        strategicImportance: clamp10(parsed.strategicImportance),
-        riskScore: clamp10(parsed.riskScore),
-        politicalImpact: String(parsed.politicalImpact ?? "").trim(),
-        economicImpact: String(parsed.economicImpact ?? "").trim(),
-        militaryImpact: String(parsed.militaryImpact ?? "").trim(),
-        diplomaticImpact: String(parsed.diplomaticImpact ?? "").trim(),
-      };
-      return { result, error: null };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("analyzeArticle error:", msg);
-      return { result: null, error: msg };
-    }
-  });
+        });
+        const text = res.text ?? "";
+        if (!text) return { result: null, error: "empty-response", errorCode: "UNKNOWN" };
+        const parsed = JSON.parse(extractJson(text)) as Partial<ArticleAnalysis>;
+        const clamp10 = (n: unknown) => Math.max(1, Math.min(10, Math.round(Number(n ?? 5))));
+        const result: ArticleAnalysis = {
+          executiveSummary: String(parsed.executiveSummary ?? "").trim(),
+          countriesInvolved: Array.isArray(parsed.countriesInvolved)
+            ? parsed.countriesInvolved
+                .map((c) => String(c).trim())
+                .filter(Boolean)
+                .slice(0, 20)
+            : [],
+          strategicImportance: clamp10(parsed.strategicImportance),
+          riskScore: clamp10(parsed.riskScore),
+          politicalImpact: String(parsed.politicalImpact ?? "").trim(),
+          economicImpact: String(parsed.economicImpact ?? "").trim(),
+          militaryImpact: String(parsed.militaryImpact ?? "").trim(),
+          diplomaticImpact: String(parsed.diplomaticImpact ?? "").trim(),
+        };
+        return { result, error: null };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const code = classifyAIError(e);
+        console.error("analyzeArticle error:", msg);
+        return { result: null, error: msg, errorCode: code };
+      }
+    },
+  );

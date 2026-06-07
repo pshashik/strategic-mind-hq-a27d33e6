@@ -165,7 +165,6 @@ export default function MapComponent({
           onSelect({
             code: code.slice(0, 2),
             code3: code,
-            code2: code.slice(0, 2),
             name: countryName,
             region: feature.properties?.subregion || feature.properties?.continent || "Global",
             x: 0,
