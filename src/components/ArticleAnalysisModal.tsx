@@ -222,17 +222,18 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
             )}
 
             {error && !loading && (
-              <div className="space-y-2">
-                <div className="flex items-start gap-2 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm text-destructive">
-                  <AlertCircle className="size-4 mt-0.5 shrink-0" />
-                  <span>{error}</span>
-                </div>
-                <button
-                  onClick={() => runAnalysis(true)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-border/60 text-sm hover:bg-accent/40"
-                >
-                  <Sparkles className="size-4" /> Retry analysis
-                </button>
+              <div
+                className={`flex items-start gap-2 p-3 rounded-md border text-sm ${
+                  usedFallback
+                    ? "border-risk-medium/40 bg-risk-medium/10 text-risk-medium"
+                    : "border-destructive/40 bg-destructive/10 text-destructive"
+                }`}
+              >
+                <AlertCircle className="size-4 mt-0.5 shrink-0" />
+                <span>
+                  {error}
+                  {usedFallback && " Showing a local intelligence estimate instead."}
+                </span>
               </div>
             )}
 
@@ -241,13 +242,17 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
                 <Report result={result} />
                 <div className="flex items-center justify-between gap-2 pt-1">
                   <span className="text-[11px] text-muted-foreground">
-                    {cachedAt ? `Cached ${formatPubDate(cachedAt)}` : ""}
+                    {usedFallback
+                      ? "Local intelligence estimate"
+                      : cachedAt
+                        ? `Cached ${formatPubDate(cachedAt)}`
+                        : ""}
                   </span>
                   <button
                     onClick={() => runAnalysis(true)}
                     className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border/60 hover:bg-accent/40"
                   >
-                    <Sparkles className="size-3.5" /> Re-run analysis
+                    <Sparkles className="size-3.5" /> {usedFallback ? "Retry analysis" : "Re-run analysis"}
                   </button>
                 </div>
               </>
