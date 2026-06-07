@@ -21,35 +21,40 @@ const InputSchema = z.object({
 
 export const askGemini = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { text: "", error: "GEMINI_API_KEY is not configured on the server." };
-    }
+  .handler(
+    async ({
+      data,
+    }): Promise<{ text: string; error: string | null; errorCode?: AIErrorCode }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { text: "", error: "missing-api-key", errorCode: "UNAUTHORIZED" };
+      }
 
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
 
-      const contents = [
-        ...data.history.map((m) => ({ role: m.role, parts: [{ text: m.content }] })),
-        { role: "user" as const, parts: [{ text: data.question }] },
-      ];
+        const contents = [
+          ...data.history.map((m) => ({ role: m.role, parts: [{ text: m.content }] })),
+          { role: "user" as const, parts: [{ text: data.question }] },
+        ];
 
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents,
-        config: { systemInstruction: SYSTEM_INSTRUCTION },
-      });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents,
+          config: { systemInstruction: SYSTEM_INSTRUCTION },
+        });
 
-      const text = res.text ?? "";
-      return { text, error: text ? null : "No response received." };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("askGemini error:", msg);
-      return { text: "", error: msg };
-    }
-  });
+        const text = res.text ?? "";
+        return { text, error: text ? null : "empty-response", errorCode: text ? undefined : "UNKNOWN" };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const code = classifyAIError(e);
+        console.error("askGemini error:", msg);
+        return { text: "", error: msg, errorCode: code };
+      }
+    },
+  );
 
 const SimInputSchema = z.object({
   scenario: z.string().min(5).max(2000),
