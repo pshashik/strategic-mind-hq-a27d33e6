@@ -92,45 +92,54 @@ function extractJson(text: string): string {
 
 export const simulateScenario = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SimInputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
-    }
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: ScenarioResult | null;
+      error: string | null;
+      errorCode?: AIErrorCode;
+    }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { result: null, error: "missing-api-key", errorCode: "UNAUTHORIZED" };
+      }
 
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
 
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
-        config: {
-          systemInstruction: SIM_INSTRUCTION,
-          responseMimeType: "application/json",
-        },
-      });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents: [{ role: "user", parts: [{ text: `Scenario:\n${data.scenario}` }] }],
+          config: {
+            systemInstruction: SIM_INSTRUCTION,
+            responseMimeType: "application/json",
+          },
+        });
 
-      const text = res.text ?? "";
-      if (!text) return { result: null, error: "No response received." };
+        const text = res.text ?? "";
+        if (!text) return { result: null, error: "empty-response", errorCode: "UNKNOWN" };
 
-      const parsed = JSON.parse(extractJson(text)) as Partial<ScenarioResult>;
-      const score = Math.max(0, Math.min(100, Math.round(Number(parsed.riskScore ?? 50))));
-      const result: ScenarioResult = {
-        bestCase: String(parsed.bestCase ?? "").trim(),
-        mostLikely: String(parsed.mostLikely ?? "").trim(),
-        worstCase: String(parsed.worstCase ?? "").trim(),
-        economicImpact: String(parsed.economicImpact ?? "").trim(),
-        riskScore: score,
-        summary: parsed.summary ? String(parsed.summary).trim() : undefined,
-      };
-      return { result, error: null };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("simulateScenario error:", msg);
-      return { result: null, error: msg };
-    }
-  });
+        const parsed = JSON.parse(extractJson(text)) as Partial<ScenarioResult>;
+        const score = Math.max(0, Math.min(100, Math.round(Number(parsed.riskScore ?? 50))));
+        const result: ScenarioResult = {
+          bestCase: String(parsed.bestCase ?? "").trim(),
+          mostLikely: String(parsed.mostLikely ?? "").trim(),
+          worstCase: String(parsed.worstCase ?? "").trim(),
+          economicImpact: String(parsed.economicImpact ?? "").trim(),
+          riskScore: score,
+          summary: parsed.summary ? String(parsed.summary).trim() : undefined,
+        };
+        return { result, error: null };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const code = classifyAIError(e);
+        console.error("simulateScenario error:", msg);
+        return { result: null, error: msg, errorCode: code };
+      }
+    },
+  );
 
 const ArticleInputSchema = z.object({
   title: z.string().min(1).max(1000),
