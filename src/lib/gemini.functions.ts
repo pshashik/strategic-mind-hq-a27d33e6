@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { GEMINI_FLASH_MODEL } from "@/lib/gemini-feed";
+import { classifyAIError, type AIErrorCode } from "@/lib/ai-errors";
 
 const SYSTEM_INSTRUCTION = `You are StrategicMind AI, a geopolitical intelligence analyst. Respond like an official intelligence briefing:
 - Use clean markdown: **bold** for key terms, bullet lists for findings, numbered lists for sequences.
