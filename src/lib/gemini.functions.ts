@@ -179,7 +179,11 @@ export const analyzeArticle = createServerFn({ method: "POST" })
         contents: [
           {
             role: "user",
-            parts: [{ text: `Article Title:\n${data.title}\n\nArticle Summary:\n${data.summary || "(no summary provided)"}` }],
+            parts: [
+              {
+                text: `Article Title:\n${data.title}\n\nArticle Summary:\n${data.summary || "(no summary provided)"}`,
+              },
+            ],
           },
         ],
         config: {
@@ -194,7 +198,10 @@ export const analyzeArticle = createServerFn({ method: "POST" })
       const result: ArticleAnalysis = {
         executiveSummary: String(parsed.executiveSummary ?? "").trim(),
         countriesInvolved: Array.isArray(parsed.countriesInvolved)
-          ? parsed.countriesInvolved.map((c) => String(c).trim()).filter(Boolean).slice(0, 20)
+          ? parsed.countriesInvolved
+              .map((c) => String(c).trim())
+              .filter(Boolean)
+              .slice(0, 20)
           : [],
         strategicImportance: clamp10(parsed.strategicImportance),
         riskScore: clamp10(parsed.riskScore),
@@ -210,5 +217,3 @@ export const analyzeArticle = createServerFn({ method: "POST" })
       return { result: null, error: msg };
     }
   });
-
-

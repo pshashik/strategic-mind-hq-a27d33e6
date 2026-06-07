@@ -1,5 +1,14 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, MessageSquare, Globe2, Flag, GitBranch, Radar, Search, Bell } from "lucide-react";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Globe2,
+  Flag,
+  GitBranch,
+  Radar,
+  Search,
+  Bell,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -22,8 +31,12 @@ export function AppLayout({ children }: { children?: ReactNode }) {
               <Radar className="size-5 text-primary" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-gradient leading-tight">StrategicMind AI</div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Intelligence Suite</div>
+              <div className="text-sm font-semibold text-gradient leading-tight">
+                StrategicMind AI
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Intelligence Suite
+              </div>
             </div>
           </div>
         </div>

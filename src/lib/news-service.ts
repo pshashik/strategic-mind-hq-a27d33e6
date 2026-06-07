@@ -10,16 +10,66 @@ export interface LocalGeopoliticalRisk {
 
 /** Keyword-weight map for offline Top Risks when Gemini rate-limits (429). */
 const RISK_SIGNALS: { pattern: RegExp; weight: number; region: string; label: string }[] = [
-  { pattern: /gulf strikes?|strait of hormuz|houthi|red sea/i, weight: 15, region: "Middle East", label: "Gulf Strikes & Maritime Threat" },
-  { pattern: /ukraine|russia|donbas|crimea|kyiv/i, weight: 14, region: "Eastern Europe", label: "Ukraine-Russia Escalation" },
-  { pattern: /taiwan|south china sea|beijing|pla\b/i, weight: 13, region: "Indo-Pacific", label: "Indo-Pacific Military Tension" },
-  { pattern: /nuclear|warhead|icbm|enrichment/i, weight: 12, region: "Global", label: "Nuclear Proliferation Risk" },
-  { pattern: /sanctions?|tariff|trade war|supply chain/i, weight: 11, region: "Global", label: "Economic Disruption & Sanctions" },
-  { pattern: /missile|drone strike|airstrike|bombard/i, weight: 10, region: "Global", label: "Kinetic Military Escalation" },
-  { pattern: /ceasefire|diplomatic|summit|negotiat/i, weight: 6, region: "Global", label: "Diplomatic Instability" },
-  { pattern: /protest|unrest|coup|insurgent/i, weight: 9, region: "Global", label: "Internal Security Unrest" },
-  { pattern: /oil|opec|energy crisis|gas pipeline/i, weight: 8, region: "Global", label: "Energy Market Shock" },
-  { pattern: /cyber|hack|infrastructure attack/i, weight: 7, region: "Global", label: "Cyber Infrastructure Threat" },
+  {
+    pattern: /gulf strikes?|strait of hormuz|houthi|red sea/i,
+    weight: 15,
+    region: "Middle East",
+    label: "Gulf Strikes & Maritime Threat",
+  },
+  {
+    pattern: /ukraine|russia|donbas|crimea|kyiv/i,
+    weight: 14,
+    region: "Eastern Europe",
+    label: "Ukraine-Russia Escalation",
+  },
+  {
+    pattern: /taiwan|south china sea|beijing|pla\b/i,
+    weight: 13,
+    region: "Indo-Pacific",
+    label: "Indo-Pacific Military Tension",
+  },
+  {
+    pattern: /nuclear|warhead|icbm|enrichment/i,
+    weight: 12,
+    region: "Global",
+    label: "Nuclear Proliferation Risk",
+  },
+  {
+    pattern: /sanctions?|tariff|trade war|supply chain/i,
+    weight: 11,
+    region: "Global",
+    label: "Economic Disruption & Sanctions",
+  },
+  {
+    pattern: /missile|drone strike|airstrike|bombard/i,
+    weight: 10,
+    region: "Global",
+    label: "Kinetic Military Escalation",
+  },
+  {
+    pattern: /ceasefire|diplomatic|summit|negotiat/i,
+    weight: 6,
+    region: "Global",
+    label: "Diplomatic Instability",
+  },
+  {
+    pattern: /protest|unrest|coup|insurgent/i,
+    weight: 9,
+    region: "Global",
+    label: "Internal Security Unrest",
+  },
+  {
+    pattern: /oil|opec|energy crisis|gas pipeline/i,
+    weight: 8,
+    region: "Global",
+    label: "Energy Market Shock",
+  },
+  {
+    pattern: /cyber|hack|infrastructure attack/i,
+    weight: 7,
+    region: "Global",
+    label: "Cyber Infrastructure Threat",
+  },
 ];
 
 export async function fetchAllNews() {
@@ -73,7 +123,9 @@ export function formatAlertTimestamp(value: string, fallbackTs?: number): string
  * Lightweight local Top Risks fallback — scores keyword frequencies in the live RSS feed.
  * Used when Gemini returns HTTP 429 (rate limit).
  */
-export function computeLocalTopRisks(articles: Pick<NewsItem, "title" | "summary">[]): LocalGeopoliticalRisk[] {
+export function computeLocalTopRisks(
+  articles: Pick<NewsItem, "title" | "summary">[],
+): LocalGeopoliticalRisk[] {
   const buckets = new Map<string, { score: number; region: string; label: string; hits: number }>();
 
   for (const article of articles) {

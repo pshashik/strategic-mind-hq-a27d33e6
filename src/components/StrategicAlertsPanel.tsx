@@ -1,19 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  synthesizeStrategicAlerts,
+  generateLocalAlerts,
   type AlertSeverity,
   type StrategicAlert,
 } from "@/lib/alerts.functions";
-import {
-  isAlertsCacheFresh,
-  isAlertsFetchInFlight,
-  readAlertsCache,
-  setAlertsFetchInFlight,
-  writeAlertsCache,
-} from "@/lib/alerts-cache";
 import { formatAlertTimestamp, type NewsItem } from "@/lib/news-service";
 
 interface Props {
@@ -48,11 +40,7 @@ function ScanningIndicator() {
     return () => clearInterval(id);
   }, []);
 
-  return (
-    <span className="text-sm text-primary font-medium">
-      Scanning Tactical Patterns{dots}
-    </span>
-  );
+  return <span className="text-sm text-primary font-medium">Scanning Tactical Patterns{dots}</span>;
 }
 
 function AlertsSkeleton() {
@@ -87,7 +75,9 @@ function AlertItem({ alert, fallbackTs }: { alert: StrategicAlert; fallbackTs?: 
       <div className="flex-1 min-w-0">
         <div className="text-sm leading-snug">{alert.title}</div>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
-          <span className={`px-1.5 py-0.5 rounded border font-medium ${severityBadgeClass(alert.severity)}`}>
+          <span
+            className={`px-1.5 py-0.5 rounded border font-medium ${severityBadgeClass(alert.severity)}`}
+          >
             {alert.severity}
           </span>
           <span className="text-muted-foreground">{alert.category}</span>
@@ -100,83 +90,49 @@ function AlertItem({ alert, fallbackTs }: { alert: StrategicAlert; fallbackTs?: 
 }
 
 export function StrategicAlertsPanel({ articles }: Props) {
-  const synthesize = useServerFn(synthesizeStrategicAlerts);
   const [alerts, setAlerts] = useState<StrategicAlert[] | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mountedRef = useRef(true);
-
-  const fetchAlerts = useCallback(
-    async (feedKey: string, force = false) => {
-      if (articles.length === 0) return;
-
-      if (!force) {
-        const cached = readAlertsCache();
-        if (isAlertsCacheFresh(cached)) {
-          setAlerts(cached!.alerts);
-          return;
-        }
-        if (isAlertsFetchInFlight()) return;
-      }
-
-      setAlertsFetchInFlight(true);
-      setGenerating(true);
-      setError(null);
-
-      try {
-        const res = await synthesize({
-          data: {
-            articles: articles.map(({ title, summary, pubDate }) => ({
-              title,
-              summary: summary ?? "",
-              pubDate,
-            })),
-          },
-        });
-
-        if (!mountedRef.current) return;
-
-        if (res.error || !res.result) {
-          setError(res.error ?? "Failed to generate strategic alerts.");
-          const stale = readAlertsCache();
-          if (stale?.alerts.length) setAlerts(stale.alerts);
-          else setAlerts(null);
-        } else {
-          writeAlertsCache(feedKey, res.result);
-          setAlerts(res.result);
-        }
-      } catch (e) {
-        if (!mountedRef.current) return;
-        setError(e instanceof Error ? e.message : "Failed to generate strategic alerts.");
-        const stale = readAlertsCache();
-        if (stale?.alerts.length) setAlerts(stale.alerts);
-        else setAlerts(null);
-      } finally {
-        setAlertsFetchInFlight(false);
-        if (mountedRef.current) setGenerating(false);
-      }
-    },
-    [articles, synthesize],
-  );
+  const prevArticlesLenRef = useRef(0);
 
   useEffect(() => {
-    mountedRef.current = true;
-    if (articles.length === 0) return;
-
-    const feedKey = articles.map((a) => a.id).join("|");
-    const cached = readAlertsCache();
-
-    if (isAlertsCacheFresh(cached)) {
-      setAlerts(cached!.alerts);
+    if (articles.length === 0) {
+      setAlerts([]);
+      prevArticlesLenRef.current = 0;
       return;
     }
 
-    fetchAlerts(feedKey);
+    setError(null);
 
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [articles, fetchAlerts]);
+    // If transitioned from empty to populated, show a brief scanning effect for design premium feel
+    if (prevArticlesLenRef.current === 0) {
+      setGenerating(true);
+      const timer = setTimeout(() => {
+        try {
+          const generated = generateLocalAlerts(articles);
+          setAlerts(generated);
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("Local alert generation error:", msg);
+          setError("Failed to process local alerts.");
+        } finally {
+          setGenerating(false);
+        }
+      }, 500);
+      prevArticlesLenRef.current = articles.length;
+      return () => clearTimeout(timer);
+    } else {
+      try {
+        const generated = generateLocalAlerts(articles);
+        setAlerts(generated);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error("Local alert generation error:", msg);
+        setError("Failed to process local alerts.");
+      }
+      prevArticlesLenRef.current = articles.length;
+    }
+  }, [articles]);
 
   return (
     <section className="glass-card rounded-xl p-5">
@@ -197,7 +153,11 @@ export function StrategicAlertsPanel({ articles }: Props) {
       ) : alerts && alerts.length > 0 ? (
         <ul className="space-y-3">
           {alerts.map((a, i) => (
-            <AlertItem key={a.id} alert={a} fallbackTs={articles[i]?.pubDate ?? articles[0]?.pubDate} />
+            <AlertItem
+              key={a.id}
+              alert={a}
+              fallbackTs={articles[i]?.pubDate ?? articles[0]?.pubDate}
+            />
           ))}
         </ul>
       ) : articles.length === 0 ? (

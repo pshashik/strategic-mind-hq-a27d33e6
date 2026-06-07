@@ -57,10 +57,14 @@ function CountryRow({ country }: { country: TrendingCountry }) {
         <div className="min-w-0">
           <div className="text-sm truncate">{country.countryName}</div>
           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-            <span className={`text-[11px] inline-block px-1.5 py-0.5 rounded border ${riskColor(tier)}`}>
+            <span
+              className={`text-[11px] inline-block px-1.5 py-0.5 rounded border ${riskColor(tier)}`}
+            >
               {tier}
             </span>
-            <span className="text-[10px] text-muted-foreground">{country.mentionCount} mentions</span>
+            <span className="text-[10px] text-muted-foreground">
+              {country.mentionCount} mentions
+            </span>
           </div>
         </div>
       </div>
@@ -100,7 +104,9 @@ export function TrendingCountriesPanel({ articles }: Props) {
       ) : articles.length === 0 ? (
         <p className="text-sm text-muted-foreground">Waiting for live intelligence feed…</p>
       ) : (
-        <p className="text-sm text-muted-foreground">No country mentions detected in current feed.</p>
+        <p className="text-sm text-muted-foreground">
+          No country mentions detected in current feed.
+        </p>
       )}
     </section>
   );

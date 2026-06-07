@@ -69,7 +69,8 @@ function Simulator() {
             <GitBranch className="size-6 text-primary" /> Scenario Simulator
           </h1>
           <p className="text-sm text-muted-foreground">
-            Model trajectories across best, most-likely, and worst-case outcomes — powered by Gemini.
+            Model trajectories across best, most-likely, and worst-case outcomes — powered by
+            Gemini.
           </p>
         </div>
 
@@ -125,12 +126,17 @@ function Simulator() {
               disabled={loading || !scenario.trim()}
               className="w-full px-5 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
               {loading ? "Simulating…" : "Run Simulation"}
             </button>
 
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Outputs are model-generated analyses based on historical analogs and open-source signals. Treat as decision support, not ground truth.
+              Outputs are model-generated analyses based on historical analogs and open-source
+              signals. Treat as decision support, not ground truth.
             </p>
           </section>
 
@@ -154,7 +160,9 @@ function EmptyState() {
       </div>
       <h3 className="font-semibold text-foreground">Awaiting scenario input</h3>
       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-        Describe a geopolitical scenario on the left and click <span className="text-foreground">Run Simulation</span> to generate a structured outcome briefing.
+        Describe a geopolitical scenario on the left and click{" "}
+        <span className="text-foreground">Run Simulation</span> to generate a structured outcome
+        briefing.
       </p>
     </div>
   );
@@ -165,7 +173,9 @@ function LoadingState() {
     <div className="glass-card rounded-xl h-full min-h-[420px] flex flex-col items-center justify-center text-center p-10">
       <Loader2 className="size-7 text-primary animate-spin mb-3" />
       <div className="text-sm text-foreground font-medium">Running multi-outcome simulation…</div>
-      <div className="text-xs text-muted-foreground mt-1">Correlating sources, matching historical analogs.</div>
+      <div className="text-xs text-muted-foreground mt-1">
+        Correlating sources, matching historical analogs.
+      </div>
     </div>
   );
 }
@@ -175,7 +185,9 @@ function Results({ data }: { data: ScenarioResult }) {
     <div className="space-y-4 animate-in fade-in duration-500">
       {data.summary && (
         <div className="glass-card rounded-xl px-5 py-4">
-          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Executive Summary</div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            Executive Summary
+          </div>
           <p className="text-sm text-foreground leading-relaxed">{data.summary}</p>
         </div>
       )}
@@ -218,7 +230,9 @@ function Results({ data }: { data: ScenarioResult }) {
             </div>
             <div>
               <h2 className="font-semibold text-foreground text-sm">Economic Impact</h2>
-              <p className="text-[11px] text-muted-foreground">Markets · Supply chain · Currencies</p>
+              <p className="text-[11px] text-muted-foreground">
+                Markets · Supply chain · Currencies
+              </p>
             </div>
           </header>
           <div className="h-1 rounded-full mb-4 bg-amber-500/70" />
@@ -266,10 +280,13 @@ function OutcomeCard({
 
 function RiskScoreCard({ score }: { score: number }) {
   const level =
-    score >= 75 ? { label: "Critical", color: "text-rose-500", bar: "bg-rose-500" } :
-    score >= 50 ? { label: "Elevated", color: "text-amber-500", bar: "bg-amber-500" } :
-    score >= 25 ? { label: "Moderate", color: "text-sky-500", bar: "bg-sky-500" } :
-                  { label: "Low", color: "text-emerald-500", bar: "bg-emerald-500" };
+    score >= 75
+      ? { label: "Critical", color: "text-rose-500", bar: "bg-rose-500" }
+      : score >= 50
+        ? { label: "Elevated", color: "text-amber-500", bar: "bg-amber-500" }
+        : score >= 25
+          ? { label: "Moderate", color: "text-sky-500", bar: "bg-sky-500" }
+          : { label: "Low", color: "text-emerald-500", bar: "bg-emerald-500" };
 
   // Gauge: SVG semicircle
   const radius = 70;
@@ -317,7 +334,9 @@ function RiskScoreCard({ score }: { score: number }) {
       </div>
 
       <div className="mt-4 flex items-center justify-center">
-        <span className={`text-xs px-3 py-1 rounded-full border bg-background/40 ${level.color} border-current/30`}>
+        <span
+          className={`text-xs px-3 py-1 rounded-full border bg-background/40 ${level.color} border-current/30`}
+        >
           {level.label} Risk
         </span>
       </div>

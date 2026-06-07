@@ -96,7 +96,10 @@ function RiskMap() {
               </svg>
               <div className="mt-4 flex flex-wrap gap-3 text-xs">
                 {LEGEND.map(({ band, range }) => (
-                  <span key={band} className={`px-2 py-1 rounded border ${riskBandBadgeClass(band)}`}>
+                  <span
+                    key={band}
+                    className={`px-2 py-1 rounded border ${riskBandBadgeClass(band)}`}
+                  >
                     <span
                       className={`inline-block size-2 rounded-full mr-1.5 ${riskBandDotClass(band).replace("fill-", "bg-")}`}
                     />
@@ -124,7 +127,9 @@ function RiskMap() {
                   />
                 </div>
               </div>
-              <span className={`inline-block text-xs px-2 py-1 rounded border ${riskBandBadgeClass(active.band)}`}>
+              <span
+                className={`inline-block text-xs px-2 py-1 rounded border ${riskBandBadgeClass(active.band)}`}
+              >
                 {riskBandLabel(active.band).toUpperCase()} · {active.riskScore}/10
               </span>
               <div>
@@ -141,7 +146,9 @@ function RiskMap() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No matching feed articles for this country.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No matching feed articles for this country.
+                  </p>
                 )}
               </div>
             </aside>
@@ -168,7 +175,9 @@ function RiskMap() {
                     <div className="text-sm truncate">{c.name}</div>
                     <div className="text-[11px] text-muted-foreground">{c.region}</div>
                   </div>
-                  <div className={`text-sm font-semibold ${riskBandBadgeClass(c.band).split(" ")[0]}`}>
+                  <div
+                    className={`text-sm font-semibold ${riskBandBadgeClass(c.band).split(" ")[0]}`}
+                  >
                     {c.riskScore}
                   </div>
                 </button>

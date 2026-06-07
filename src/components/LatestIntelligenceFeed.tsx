@@ -75,9 +75,7 @@ export function LatestIntelligenceFeed({ articles, loading, refreshing, error, o
                   {n.title}
                 </h3>
                 {n.summary && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                    {n.summary}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.summary}</p>
                 )}
                 <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
                   <span className="inline-flex items-center gap-1 text-primary opacity-80 group-hover:opacity-100">

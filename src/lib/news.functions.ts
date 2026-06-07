@@ -38,8 +38,7 @@ function parseFeed(xml: string, source: NewsItem["source"]): NewsItem[] {
       const title = pick(raw, "title");
       const link = pick(raw, "link");
       const desc = pick(raw, "description");
-      const date =
-        pick(raw, "pubDate") || pick(raw, "dc:date") || pick(raw, "date");
+      const date = pick(raw, "pubDate") || pick(raw, "dc:date") || pick(raw, "date");
       const ts = date ? Date.parse(date) : NaN;
       return {
         id: `${source}-${i}-${link || title}`,
@@ -53,14 +52,10 @@ function parseFeed(xml: string, source: NewsItem["source"]): NewsItem[] {
     .filter((it) => it.title && it.link);
 }
 
-async function fetchFeed(
-  url: string,
-  source: NewsItem["source"],
-): Promise<NewsItem[]> {
+async function fetchFeed(url: string, source: NewsItem["source"]): Promise<NewsItem[]> {
   const res = await fetch(url, {
     headers: {
-      "user-agent":
-        "Mozilla/5.0 (compatible; StrategicMindAI/1.0; +https://strategicmind.ai)",
+      "user-agent": "Mozilla/5.0 (compatible; StrategicMindAI/1.0; +https://strategicmind.ai)",
       accept: "application/rss+xml, application/xml, text/xml, */*",
     },
   });
@@ -75,12 +70,8 @@ export const getLatestNews = createServerFn({ method: "GET" }).handler(
       return { items: cache.items, cachedAt: cache.at };
     }
 
-    const results = await Promise.allSettled(
-      FEEDS.map((f) => fetchFeed(f.url, f.source)),
-    );
-    const items = results.flatMap((r) =>
-      r.status === "fulfilled" ? r.value : [],
-    );
+    const results = await Promise.allSettled(FEEDS.map((f) => fetchFeed(f.url, f.source)));
+    const items = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
     items.sort((a, b) => b.pubDate - a.pubDate);
     const top = items.slice(0, 20);
 

@@ -24,12 +24,24 @@ const VOLATILITY_PATTERN =
   /\b(war|conflict|strike|attack|missile|sanctions?|escalat|invasion|bomb|troops|nuclear|crisis|hostage|ceasefire)\b/gi;
 
 const COUNTRY_LEXICON: CountryLexiconEntry[] = [
-  { code: "US", name: "United States", pattern: /\b(united states|u\.s\.|usa|american|washington|pentagon|white house)\b/gi },
-  { code: "UK", name: "United Kingdom", pattern: /\b(united kingdom|britain|british|london|westminster)\b/gi },
+  {
+    code: "US",
+    name: "United States",
+    pattern: /\b(united states|u\.s\.|usa|american|washington|pentagon|white house)\b/gi,
+  },
+  {
+    code: "UK",
+    name: "United Kingdom",
+    pattern: /\b(united kingdom|britain|british|london|westminster)\b/gi,
+  },
   { code: "RU", name: "Russia", pattern: /\b(russia|russian|moscow|kremlin)\b/gi },
   { code: "CN", name: "China", pattern: /\b(china|chinese|beijing|shanghai)\b/gi },
   { code: "UA", name: "Ukraine", pattern: /\b(ukraine|ukrainian|kyiv|kiev|donbas|crimea)\b/gi },
-  { code: "IL", name: "Israel", pattern: /\b(israel|israeli|tel aviv|jerusalem|gaza|hamas|hezbollah|netanyahu)\b/gi },
+  {
+    code: "IL",
+    name: "Israel",
+    pattern: /\b(israel|israeli|tel aviv|jerusalem|gaza|hamas|hezbollah|netanyahu)\b/gi,
+  },
   { code: "IR", name: "Iran", pattern: /\b(iran|iranian|tehran)\b/gi },
   { code: "TW", name: "Taiwan", pattern: /\b(taiwan|taiwanese|taipei)\b/gi },
   { code: "KP", name: "North Korea", pattern: /\b(north korea|pyongyang|dprk)\b/gi },
@@ -51,7 +63,11 @@ const COUNTRY_LEXICON: CountryLexiconEntry[] = [
   { code: "SD", name: "Sudan", pattern: /\b(sudan|sudanese|khartoum)\b/gi },
   { code: "ET", name: "Ethiopia", pattern: /\b(ethiopia|ethiopian|addis ababa)\b/gi },
   { code: "NG", name: "Nigeria", pattern: /\b(nigeria|nigerian|abuja|lagos)\b/gi },
-  { code: "ZA", name: "South Africa", pattern: /\b(south africa|south african|pretoria|johannesburg)\b/gi },
+  {
+    code: "ZA",
+    name: "South Africa",
+    pattern: /\b(south africa|south african|pretoria|johannesburg)\b/gi,
+  },
   { code: "AU", name: "Australia", pattern: /\b(australia|australian|canberra|sydney)\b/gi },
   { code: "JP", name: "Japan", pattern: /\b(japan|japanese|tokyo)\b/gi },
   { code: "AF", name: "Afghanistan", pattern: /\b(afghanistan|afghan|kabul|taliban)\b/gi },
@@ -69,13 +85,22 @@ function countVolatility(text: string): number {
   return (text.match(VOLATILITY_PATTERN) ?? []).length;
 }
 
-function deriveTrend(recentHits: number, olderHits: number): { direction: TrendDirection; change: number } {
+function deriveTrend(
+  recentHits: number,
+  olderHits: number,
+): { direction: TrendDirection; change: number } {
   if (recentHits > olderHits) {
-    const change = Math.min(99, Math.round(((recentHits - olderHits) / Math.max(1, olderHits)) * 100));
+    const change = Math.min(
+      99,
+      Math.round(((recentHits - olderHits) / Math.max(1, olderHits)) * 100),
+    );
     return { direction: "up", change: change || recentHits * 5 };
   }
   if (recentHits < olderHits) {
-    const change = Math.min(99, Math.round(((olderHits - recentHits) / Math.max(1, olderHits)) * 100));
+    const change = Math.min(
+      99,
+      Math.round(((olderHits - recentHits) / Math.max(1, olderHits)) * 100),
+    );
     return { direction: "down", change: change || olderHits * 3 };
   }
   return { direction: "stable", change: 0 };

@@ -18,7 +18,8 @@ export const breakingNews: NewsItem[] = [
     source: "Reuters",
     time: "12 min ago",
     severity: "high",
-    summary: "Three vessels engaged in close-range maneuvering near disputed Spratly reefs as regional powers issue statements.",
+    summary:
+      "Three vessels engaged in close-range maneuvering near disputed Spratly reefs as regional powers issue statements.",
   },
   {
     id: "2",
@@ -27,7 +28,8 @@ export const breakingNews: NewsItem[] = [
     source: "Financial Times",
     time: "34 min ago",
     severity: "medium",
-    summary: "New package targets LNG transshipments and shadow fleet operations, signaling tighter enforcement.",
+    summary:
+      "New package targets LNG transshipments and shadow fleet operations, signaling tighter enforcement.",
   },
   {
     id: "3",
@@ -36,7 +38,8 @@ export const breakingNews: NewsItem[] = [
     source: "Al Jazeera",
     time: "1 hr ago",
     severity: "critical",
-    summary: "Negotiators report fundamental disagreements over phase-two terms; humanitarian corridors at risk.",
+    summary:
+      "Negotiators report fundamental disagreements over phase-two terms; humanitarian corridors at risk.",
   },
   {
     id: "4",
@@ -45,7 +48,8 @@ export const breakingNews: NewsItem[] = [
     source: "Bloomberg",
     time: "2 hrs ago",
     severity: "high",
-    summary: "Niger junta renegotiates extraction contracts, prompting price spikes across European nuclear markets.",
+    summary:
+      "Niger junta renegotiates extraction contracts, prompting price spikes across European nuclear markets.",
   },
   {
     id: "5",
@@ -85,10 +89,30 @@ export const trendingCountries = [
 ];
 
 export const strategicAlerts = [
-  { id: "a1", title: "Unusual troop movements detected — Eastern Ukraine border", level: "critical" as RiskLevel, time: "8m" },
-  { id: "a2", title: "Currency intervention by PBOC exceeds 3σ threshold", level: "high" as RiskLevel, time: "41m" },
-  { id: "a3", title: "Diplomatic cable references new mediator in Yemen", level: "medium" as RiskLevel, time: "2h" },
-  { id: "a4", title: "Satellite imagery: port construction activity, Djibouti", level: "medium" as RiskLevel, time: "5h" },
+  {
+    id: "a1",
+    title: "Unusual troop movements detected — Eastern Ukraine border",
+    level: "critical" as RiskLevel,
+    time: "8m",
+  },
+  {
+    id: "a2",
+    title: "Currency intervention by PBOC exceeds 3σ threshold",
+    level: "high" as RiskLevel,
+    time: "41m",
+  },
+  {
+    id: "a3",
+    title: "Diplomatic cable references new mediator in Yemen",
+    level: "medium" as RiskLevel,
+    time: "2h",
+  },
+  {
+    id: "a4",
+    title: "Satellite imagery: port construction activity, Djibouti",
+    level: "medium" as RiskLevel,
+    time: "5h",
+  },
 ];
 
 export interface Country {
@@ -106,57 +130,197 @@ export interface Country {
 }
 
 export const countries: Country[] = [
-  { code: "US", name: "United States", region: "North America", riskScore: 32, risk: "medium", allies: ["UK", "Canada", "Japan", "Australia", "Germany"], rivals: ["Russia", "China", "Iran", "North Korea"], developments: [
-    { date: "Today", headline: "Treasury expands secondary sanctions framework" },
-    { date: "Yesterday", headline: "Senate advances defense authorization bill" },
-    { date: "2 days ago", headline: "USTR opens Section 301 review on critical minerals" },
-  ], x: 22, y: 38 },
-  { code: "CN", name: "China", region: "Asia-Pacific", riskScore: 68, risk: "high", allies: ["Russia", "Pakistan", "Iran", "North Korea"], rivals: ["United States", "India", "Japan", "Taiwan"], developments: [
-    { date: "Today", headline: "PBOC intervenes to support yuan amid capital outflows" },
-    { date: "Today", headline: "Joint naval patrol announced with Russian Pacific Fleet" },
-    { date: "Yesterday", headline: "New export controls on gallium and germanium" },
-  ], x: 75, y: 42 },
-  { code: "RU", name: "Russia", region: "Eurasia", riskScore: 84, risk: "critical", allies: ["China", "Belarus", "Iran", "North Korea"], rivals: ["United States", "UK", "Germany", "Ukraine"], developments: [
-    { date: "Today", headline: "Mobilization decree expands eligible age brackets" },
-    { date: "Yesterday", headline: "Shadow fleet rerouted via West African ports" },
-  ], x: 60, y: 28 },
-  { code: "IL", name: "Israel", region: "Middle East", riskScore: 88, risk: "critical", allies: ["United States", "Germany", "UK"], rivals: ["Iran", "Syria", "Lebanon (Hezbollah)"], developments: [
-    { date: "Today", headline: "Doha talks stall over phase-two terms" },
-    { date: "Today", headline: "Northern front exchange-of-fire intensifies" },
-  ], x: 56, y: 46 },
-  { code: "IR", name: "Iran", region: "Middle East", riskScore: 81, risk: "critical", allies: ["Russia", "China", "Syria"], rivals: ["United States", "Israel", "Saudi Arabia"], developments: [
-    { date: "Today", headline: "Enrichment levels reported above 84% at Fordow" },
-    { date: "Yesterday", headline: "IRGC announces new naval exercise zone" },
-  ], x: 61, y: 45 },
-  { code: "TW", name: "Taiwan", region: "Asia-Pacific", riskScore: 72, risk: "high", allies: ["United States", "Japan", "Lithuania"], rivals: ["China"], developments: [
-    { date: "Today", headline: "Han Kuang drills emphasize gray-zone resilience" },
-    { date: "Yesterday", headline: "Cabinet approves supplemental defense budget" },
-  ], x: 79, y: 48 },
-  { code: "UA", name: "Ukraine", region: "Europe", riskScore: 79, risk: "critical", allies: ["United States", "EU", "UK", "Poland"], rivals: ["Russia"], developments: [
-    { date: "Today", headline: "Long-range drone strikes hit two Black Sea ports" },
-    { date: "Yesterday", headline: "ATACMS deployments expand to southern axis" },
-  ], x: 56, y: 33 },
-  { code: "DE", name: "Germany", region: "Europe", riskScore: 28, risk: "medium", allies: ["France", "United States", "EU"], rivals: ["Russia"], developments: [
-    { date: "Today", headline: "Coalition debates Bundeswehr expansion timeline" },
-  ], x: 51, y: 32 },
-  { code: "IN", name: "India", region: "South Asia", riskScore: 41, risk: "medium", allies: ["United States", "France", "Israel", "Russia"], rivals: ["China", "Pakistan"], developments: [
-    { date: "Today", headline: "Border patrol exchanges reported in Ladakh" },
-  ], x: 70, y: 48 },
-  { code: "KP", name: "North Korea", region: "Asia-Pacific", riskScore: 76, risk: "high", allies: ["Russia", "China"], rivals: ["United States", "South Korea", "Japan"], developments: [
-    { date: "Today", headline: "Hypersonic glide vehicle test reported" },
-  ], x: 80, y: 38 },
-  { code: "BR", name: "Brazil", region: "Latin America", riskScore: 24, risk: "low", allies: ["Argentina", "China"], rivals: [], developments: [
-    { date: "Today", headline: "BRICS finance ministers convene in Brasília" },
-  ], x: 33, y: 65 },
-  { code: "ZA", name: "South Africa", region: "Africa", riskScore: 35, risk: "medium", allies: ["China", "Russia", "India"], rivals: [], developments: [
-    { date: "Today", headline: "AGOA renewal negotiations stall" },
-  ], x: 54, y: 72 },
-  { code: "VE", name: "Venezuela", region: "Latin America", riskScore: 58, risk: "medium", allies: ["Russia", "Iran", "Cuba"], rivals: ["United States", "Colombia"], developments: [
-    { date: "Today", headline: "Essequibo border tensions resurface with Guyana" },
-  ], x: 30, y: 58 },
-  { code: "UK", name: "United Kingdom", region: "Europe", riskScore: 22, risk: "low", allies: ["United States", "EU", "Australia"], rivals: ["Russia"], developments: [
-    { date: "Today", headline: "MOD increases Red Sea naval presence" },
-  ], x: 48, y: 30 },
+  {
+    code: "US",
+    name: "United States",
+    region: "North America",
+    riskScore: 32,
+    risk: "medium",
+    allies: ["UK", "Canada", "Japan", "Australia", "Germany"],
+    rivals: ["Russia", "China", "Iran", "North Korea"],
+    developments: [
+      { date: "Today", headline: "Treasury expands secondary sanctions framework" },
+      { date: "Yesterday", headline: "Senate advances defense authorization bill" },
+      { date: "2 days ago", headline: "USTR opens Section 301 review on critical minerals" },
+    ],
+    x: 22,
+    y: 38,
+  },
+  {
+    code: "CN",
+    name: "China",
+    region: "Asia-Pacific",
+    riskScore: 68,
+    risk: "high",
+    allies: ["Russia", "Pakistan", "Iran", "North Korea"],
+    rivals: ["United States", "India", "Japan", "Taiwan"],
+    developments: [
+      { date: "Today", headline: "PBOC intervenes to support yuan amid capital outflows" },
+      { date: "Today", headline: "Joint naval patrol announced with Russian Pacific Fleet" },
+      { date: "Yesterday", headline: "New export controls on gallium and germanium" },
+    ],
+    x: 75,
+    y: 42,
+  },
+  {
+    code: "RU",
+    name: "Russia",
+    region: "Eurasia",
+    riskScore: 84,
+    risk: "critical",
+    allies: ["China", "Belarus", "Iran", "North Korea"],
+    rivals: ["United States", "UK", "Germany", "Ukraine"],
+    developments: [
+      { date: "Today", headline: "Mobilization decree expands eligible age brackets" },
+      { date: "Yesterday", headline: "Shadow fleet rerouted via West African ports" },
+    ],
+    x: 60,
+    y: 28,
+  },
+  {
+    code: "IL",
+    name: "Israel",
+    region: "Middle East",
+    riskScore: 88,
+    risk: "critical",
+    allies: ["United States", "Germany", "UK"],
+    rivals: ["Iran", "Syria", "Lebanon (Hezbollah)"],
+    developments: [
+      { date: "Today", headline: "Doha talks stall over phase-two terms" },
+      { date: "Today", headline: "Northern front exchange-of-fire intensifies" },
+    ],
+    x: 56,
+    y: 46,
+  },
+  {
+    code: "IR",
+    name: "Iran",
+    region: "Middle East",
+    riskScore: 81,
+    risk: "critical",
+    allies: ["Russia", "China", "Syria"],
+    rivals: ["United States", "Israel", "Saudi Arabia"],
+    developments: [
+      { date: "Today", headline: "Enrichment levels reported above 84% at Fordow" },
+      { date: "Yesterday", headline: "IRGC announces new naval exercise zone" },
+    ],
+    x: 61,
+    y: 45,
+  },
+  {
+    code: "TW",
+    name: "Taiwan",
+    region: "Asia-Pacific",
+    riskScore: 72,
+    risk: "high",
+    allies: ["United States", "Japan", "Lithuania"],
+    rivals: ["China"],
+    developments: [
+      { date: "Today", headline: "Han Kuang drills emphasize gray-zone resilience" },
+      { date: "Yesterday", headline: "Cabinet approves supplemental defense budget" },
+    ],
+    x: 79,
+    y: 48,
+  },
+  {
+    code: "UA",
+    name: "Ukraine",
+    region: "Europe",
+    riskScore: 79,
+    risk: "critical",
+    allies: ["United States", "EU", "UK", "Poland"],
+    rivals: ["Russia"],
+    developments: [
+      { date: "Today", headline: "Long-range drone strikes hit two Black Sea ports" },
+      { date: "Yesterday", headline: "ATACMS deployments expand to southern axis" },
+    ],
+    x: 56,
+    y: 33,
+  },
+  {
+    code: "DE",
+    name: "Germany",
+    region: "Europe",
+    riskScore: 28,
+    risk: "medium",
+    allies: ["France", "United States", "EU"],
+    rivals: ["Russia"],
+    developments: [{ date: "Today", headline: "Coalition debates Bundeswehr expansion timeline" }],
+    x: 51,
+    y: 32,
+  },
+  {
+    code: "IN",
+    name: "India",
+    region: "South Asia",
+    riskScore: 41,
+    risk: "medium",
+    allies: ["United States", "France", "Israel", "Russia"],
+    rivals: ["China", "Pakistan"],
+    developments: [{ date: "Today", headline: "Border patrol exchanges reported in Ladakh" }],
+    x: 70,
+    y: 48,
+  },
+  {
+    code: "KP",
+    name: "North Korea",
+    region: "Asia-Pacific",
+    riskScore: 76,
+    risk: "high",
+    allies: ["Russia", "China"],
+    rivals: ["United States", "South Korea", "Japan"],
+    developments: [{ date: "Today", headline: "Hypersonic glide vehicle test reported" }],
+    x: 80,
+    y: 38,
+  },
+  {
+    code: "BR",
+    name: "Brazil",
+    region: "Latin America",
+    riskScore: 24,
+    risk: "low",
+    allies: ["Argentina", "China"],
+    rivals: [],
+    developments: [{ date: "Today", headline: "BRICS finance ministers convene in Brasília" }],
+    x: 33,
+    y: 65,
+  },
+  {
+    code: "ZA",
+    name: "South Africa",
+    region: "Africa",
+    riskScore: 35,
+    risk: "medium",
+    allies: ["China", "Russia", "India"],
+    rivals: [],
+    developments: [{ date: "Today", headline: "AGOA renewal negotiations stall" }],
+    x: 54,
+    y: 72,
+  },
+  {
+    code: "VE",
+    name: "Venezuela",
+    region: "Latin America",
+    riskScore: 58,
+    risk: "medium",
+    allies: ["Russia", "Iran", "Cuba"],
+    rivals: ["United States", "Colombia"],
+    developments: [{ date: "Today", headline: "Essequibo border tensions resurface with Guyana" }],
+    x: 30,
+    y: 58,
+  },
+  {
+    code: "UK",
+    name: "United Kingdom",
+    region: "Europe",
+    riskScore: 22,
+    risk: "low",
+    allies: ["United States", "EU", "Australia"],
+    rivals: ["Russia"],
+    developments: [{ date: "Today", headline: "MOD increases Red Sea naval presence" }],
+    x: 48,
+    y: 30,
+  },
 ];
 
 export const executiveSummary = {

@@ -154,9 +154,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
                 <Sparkles className="size-3.5" /> Intelligence Report
               </div>
-              <DialogTitle className="text-lg leading-snug pr-6">
-                {article.title}
-              </DialogTitle>
+              <DialogTitle className="text-lg leading-snug pr-6">{article.title}</DialogTitle>
               <DialogDescription asChild>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                   <span className="inline-flex items-center gap-1 text-foreground/80">
@@ -182,9 +180,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
                 <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
                   Article Summary
                 </h3>
-                <p className="text-sm leading-relaxed text-foreground/90">
-                  {article.summary}
-                </p>
+                <p className="text-sm leading-relaxed text-foreground/90">{article.summary}</p>
               </section>
             )}
 
@@ -232,9 +228,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
                 <Report result={result} />
                 <div className="flex items-center justify-between gap-2 pt-1">
                   <span className="text-[11px] text-muted-foreground">
-                    {cachedAt
-                      ? `Cached ${formatPubDate(cachedAt)}`
-                      : ""}
+                    {cachedAt ? `Cached ${formatPubDate(cachedAt)}` : ""}
                   </span>
                   <button
                     onClick={() => runAnalysis(true)}
@@ -362,10 +356,10 @@ function ScoreCard({
       ? score >= 8
         ? "bg-risk-critical"
         : score >= 6
-        ? "bg-risk-high"
-        : score >= 4
-        ? "bg-risk-medium"
-        : "bg-risk-low"
+          ? "bg-risk-high"
+          : score >= 4
+            ? "bg-risk-medium"
+            : "bg-risk-low"
       : "bg-gradient-to-r from-primary to-primary/60";
 
   return (
@@ -402,7 +396,9 @@ function ImpactBlock({
       <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1.5">
         {icon} {title}
       </h4>
-      <p className="text-sm leading-relaxed text-foreground/90">{body || "No assessment provided."}</p>
+      <p className="text-sm leading-relaxed text-foreground/90">
+        {body || "No assessment provided."}
+      </p>
     </div>
   );
 }

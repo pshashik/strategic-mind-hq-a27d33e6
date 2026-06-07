@@ -1,7 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, FileText, ExternalLink, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Send,
+  Bot,
+  User,
+  FileText,
+  ExternalLink,
+  Sparkles,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { askGemini } from "@/lib/gemini.functions";
 import ReactMarkdown from "react-markdown";
@@ -12,9 +21,15 @@ export const Route = createFileRoute("/assistant")({
   component: Assistant,
 });
 
-interface Source { title: string; outlet: string }
-interface Message { role: "user" | "ai"; content: string; sources?: Source[] }
-
+interface Source {
+  title: string;
+  outlet: string;
+}
+interface Message {
+  role: "user" | "ai";
+  content: string;
+  sources?: Source[];
+}
 
 const initial: Message[] = [
   {
@@ -47,7 +62,10 @@ function Assistant() {
 
     const history = messages
       .filter((m) => m !== initial[0])
-      .map((m) => ({ role: m.role === "user" ? ("user" as const) : ("model" as const), content: m.content }));
+      .map((m) => ({
+        role: m.role === "user" ? ("user" as const) : ("model" as const),
+        content: m.content,
+      }));
 
     setMessages((m) => [...m, { role: "user", content: q }, { role: "ai", content: "" }]);
     setLoading(true);
@@ -73,7 +91,6 @@ function Assistant() {
     }
   };
 
-
   const suggestions = [
     "Compare Iran-Israel escalation pathways",
     "Summarize today's Taiwan Strait activity",
@@ -90,7 +107,9 @@ function Assistant() {
               <h1 className="font-semibold flex items-center gap-2 text-foreground">
                 <Sparkles className="size-4 text-primary" /> Research Assistant
               </h1>
-              <p className="text-xs text-muted-foreground">Ask geopolitical questions. Powered by Gemini 2.5 Flash.</p>
+              <p className="text-xs text-muted-foreground">
+                Ask geopolitical questions. Powered by Gemini 2.5 Flash.
+              </p>
             </div>
             <span className="text-[11px] px-2 py-0.5 rounded border border-primary/30 text-primary bg-primary/10">
               gemini-2.5-flash
@@ -102,7 +121,9 @@ function Assistant() {
               <div key={i} className="flex gap-3">
                 <div
                   className={`shrink-0 size-8 rounded-md flex items-center justify-center ${
-                    m.role === "user" ? "bg-accent text-accent-foreground" : "bg-primary/15 text-primary"
+                    m.role === "user"
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-primary/15 text-primary"
                   }`}
                 >
                   {m.role === "user" ? <User className="size-4" /> : <Bot className="size-4" />}
@@ -120,7 +141,9 @@ function Assistant() {
                       )}
                     </div>
                   ) : (
-                    <div className="text-sm leading-relaxed text-foreground/95 whitespace-pre-wrap">{m.content}</div>
+                    <div className="text-sm leading-relaxed text-foreground/95 whitespace-pre-wrap">
+                      {m.content}
+                    </div>
                   )}
                   {m.sources && (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -144,7 +167,10 @@ function Assistant() {
             <div className="mx-4 mb-3 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <AlertCircle className="size-4 shrink-0 mt-0.5" />
               <div className="flex-1">{error}</div>
-              <button onClick={() => setError(null)} className="text-destructive/70 hover:text-destructive">
+              <button
+                onClick={() => setError(null)}
+                className="text-destructive/70 hover:text-destructive"
+              >
                 ✕
               </button>
             </div>
@@ -177,7 +203,11 @@ function Assistant() {
                 disabled={loading || !input.trim()}
                 className="px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                {loading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Send className="size-4" />
+                )}
                 {loading ? "Thinking" : "Send"}
               </button>
             </div>
@@ -190,8 +220,16 @@ function Assistant() {
           </h2>
           <div className="overflow-y-auto space-y-3">
             {[
-              { t: "EU adopts 14th sanctions package targeting shadow fleet", o: "Financial Times", d: "2h ago" },
-              { t: "Shadow fleet rerouting through West African ports", o: "Bloomberg", d: "4h ago" },
+              {
+                t: "EU adopts 14th sanctions package targeting shadow fleet",
+                o: "Financial Times",
+                d: "2h ago",
+              },
+              {
+                t: "Shadow fleet rerouting through West African ports",
+                o: "Bloomberg",
+                d: "4h ago",
+              },
               { t: "Port inspection regime tightens in Mediterranean", o: "Reuters", d: "6h ago" },
               { t: "Russian oil discounts widen post-package", o: "Argus", d: "8h ago" },
               { t: "Insurers re-evaluate maritime exposure", o: "Lloyd's List", d: "12h ago" },

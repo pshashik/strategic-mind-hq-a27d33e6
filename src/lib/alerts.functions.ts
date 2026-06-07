@@ -82,6 +82,64 @@ function formatRelativeShort(ts: number): string {
   return `${days}d ago`;
 }
 
+export function generateLocalAlerts(
+  articles: { title: string; summary?: string; pubDate?: number; id?: string }[],
+): StrategicAlert[] {
+  const alerts: StrategicAlert[] = [];
+
+  for (let i = 0; i < articles.length; i++) {
+    const article = articles[i];
+    const text = `${article.title} ${article.summary ?? ""}`.toLowerCase();
+
+    let category: AlertCategory = "Diplomatic Tension";
+    let severity: AlertSeverity = "Low";
+
+    // Check keywords in order of severity
+    if (/war|attack|missile|invasion|military strike/i.test(text)) {
+      severity = "Critical";
+      category = "Military Escalation";
+    } else if (/conflict|troop movement|sanctions|blockade/i.test(text)) {
+      severity = "High";
+      if (/sanctions|blockade/i.test(text)) {
+        category = "Economic Disruption";
+      } else if (/troop movement/i.test(text)) {
+        category = "Military Escalation";
+      } else {
+        category = "Emerging Conflict";
+      }
+    } else if (/tension|protest|instability/i.test(text)) {
+      severity = "Medium";
+      if (/protest|instability/i.test(text)) {
+        category = "Emerging Conflict";
+      } else {
+        category = "Diplomatic Tension";
+      }
+    } else {
+      severity = "Low";
+      // Fallback categories for low-severity alerts
+      const fallbacks: AlertCategory[] = [
+        "Diplomatic Tension",
+        "Emerging Conflict",
+        "Economic Disruption",
+        "Military Escalation",
+      ];
+      category = fallbacks[i % fallbacks.length];
+    }
+
+    const timestamp = article.pubDate ? formatRelativeShort(article.pubDate) : "Just now";
+
+    alerts.push({
+      id: `alert-${article.id || i}`,
+      title: article.title,
+      category,
+      severity,
+      timestamp,
+    });
+  }
+
+  return alerts.slice(0, 10);
+}
+
 function normalizeTimestamp(
   value: unknown,
   articles: z.infer<typeof FeedArticleSchema>[],
@@ -149,54 +207,11 @@ function normalizeSeverity(value: unknown): AlertSeverity {
 export const synthesizeStrategicAlerts = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<{ result: StrategicAlert[] | null; error: string | null }> => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
-    }
-
-    const stripped = prepareFeedArticles(
-      data.articles.map(({ title, summary, pubDate }) => ({
-        title,
-        summary: summary ?? "",
-        pubDate,
-      })),
-    );
-    const feedText = compactFeed(stripped);
-
     try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
-
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents: [{ role: "user", parts: [{ text: `News Feed (top ${stripped.length} items):\n\n${feedText}` }] }],
-        config: {
-          systemInstruction: ALERTS_SYSTEM_INSTRUCTION,
-          responseMimeType: "application/json",
-          responseJsonSchema: STRATEGIC_ALERTS_JSON_SCHEMA,
-        },
-      });
-
-      const text = res.text ?? "";
-      if (!text) return { result: null, error: "No response received." };
-
-      const parsed = JSON.parse(extractJson(text));
-      const raw = Array.isArray(parsed) ? parsed : [];
-      const result: StrategicAlert[] = raw
-        .map((a, i) => ({
-          id: String((a as StrategicAlert).id ?? "").trim() || `alert-${i + 1}`,
-          title: String((a as StrategicAlert).title ?? "").trim(),
-          category: normalizeCategory((a as StrategicAlert).category),
-          severity: normalizeSeverity((a as StrategicAlert).severity),
-          timestamp: normalizeTimestamp((a as StrategicAlert).timestamp, stripped, i),
-        }))
-        .filter((a) => a.title)
-        .slice(0, 10);
-
+      const result = generateLocalAlerts(data.articles);
       return { result, error: null };
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Request failed";
-      console.error("synthesizeStrategicAlerts error:", msg);
       return { result: null, error: msg };
     }
   });

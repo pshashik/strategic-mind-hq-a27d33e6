@@ -84,7 +84,7 @@
   --bg-grad-1: oklch(0.25 0.06 220 / 0.4);
   --bg-grad-2: oklch(0.25 0.08 270 / 0.3);
   --glass-bg-1: oklch(0.23 0.03 250 / 0.7);
-  --glass-bg-2: oklch(0.20 0.025 250 / 0.7);
+  --glass-bg-2: oklch(0.2 0.025 250 / 0.7);
   --glass-border: oklch(0.32 0.03 250 / 0.6);
 }
 

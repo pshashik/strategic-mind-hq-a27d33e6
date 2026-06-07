@@ -35,9 +35,7 @@ function compactFeed(articles: z.infer<typeof FeedArticleSchema>[]): string {
   return articles
     .map((item, i) => {
       const summary = item.summary.trim();
-      return summary
-        ? `${i + 1}. ${item.title}\n   ${summary}`
-        : `${i + 1}. ${item.title}`;
+      return summary ? `${i + 1}. ${item.title}\n   ${summary}` : `${i + 1}. ${item.title}`;
     })
     .join("\n\n");
 }
@@ -58,50 +56,66 @@ function extractJson(text: string): string {
 
 export const synthesizeTopRisks = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: GeopoliticalRisk[] | null; error: string | null; rateLimited?: boolean }> => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
-    }
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: GeopoliticalRisk[] | null;
+      error: string | null;
+      rateLimited?: boolean;
+    }> => {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        return { result: null, error: "GEMINI_API_KEY is not configured on the server." };
+      }
 
-    const stripped = prepareFeedArticles(
-      data.articles.map(({ title, summary }) => ({ title, summary: summary ?? "" })),
-    );
-    const feedText = compactFeed(stripped);
+      const stripped = prepareFeedArticles(
+        data.articles.map(({ title, summary }) => ({ title, summary: summary ?? "" })),
+      );
+      const feedText = compactFeed(stripped);
 
-    try {
-      const { GoogleGenAI } = await import("@google/genai");
-      const ai = new GoogleGenAI({ apiKey });
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const ai = new GoogleGenAI({ apiKey });
 
-      const res = await ai.models.generateContent({
-        model: GEMINI_FLASH_MODEL,
-        contents: [{ role: "user", parts: [{ text: `News Feed (top ${stripped.length} items):\n\n${feedText}` }] }],
-        config: {
-          systemInstruction: RISKS_SYSTEM_INSTRUCTION,
-          responseMimeType: "application/json",
-          responseJsonSchema: TOP_RISKS_JSON_SCHEMA,
-        },
-      });
+        const res = await ai.models.generateContent({
+          model: GEMINI_FLASH_MODEL,
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: `News Feed (top ${stripped.length} items):\n\n${feedText}` }],
+            },
+          ],
+          config: {
+            systemInstruction: RISKS_SYSTEM_INSTRUCTION,
+            responseMimeType: "application/json",
+            responseJsonSchema: TOP_RISKS_JSON_SCHEMA,
+          },
+        });
 
-      const text = res.text ?? "";
-      if (!text) return { result: null, error: "No response received." };
+        const text = res.text ?? "";
+        if (!text) return { result: null, error: "No response received." };
 
-      const parsed = JSON.parse(extractJson(text));
-      const raw = Array.isArray(parsed) ? parsed : [];
-      const result: GeopoliticalRisk[] = raw
-        .map((r) => ({
-          riskName: String((r as GeopoliticalRisk).riskName ?? "").trim(),
-          severityScore: Math.max(0, Math.min(100, Math.round(Number((r as GeopoliticalRisk).severityScore ?? 0)))),
-          regionAffected: String((r as GeopoliticalRisk).regionAffected ?? "").trim(),
-        }))
-        .filter((r) => r.riskName)
-        .slice(0, 5);
+        const parsed = JSON.parse(extractJson(text));
+        const raw = Array.isArray(parsed) ? parsed : [];
+        const result: GeopoliticalRisk[] = raw
+          .map((r) => ({
+            riskName: String((r as GeopoliticalRisk).riskName ?? "").trim(),
+            severityScore: Math.max(
+              0,
+              Math.min(100, Math.round(Number((r as GeopoliticalRisk).severityScore ?? 0))),
+            ),
+            regionAffected: String((r as GeopoliticalRisk).regionAffected ?? "").trim(),
+          }))
+          .filter((r) => r.riskName)
+          .slice(0, 5);
 
-      return { result, error: null };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Request failed";
-      const rateLimited = /429|rate limit|quota|resource exhausted/i.test(msg);
-      console.error("synthesizeTopRisks error:", msg);
-      return { result: null, error: msg, rateLimited };
-    }
-  });
+        return { result, error: null };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Request failed";
+        const rateLimited = /429|rate limit|quota|resource exhausted/i.test(msg);
+        console.error("synthesizeTopRisks error:", msg);
+        return { result: null, error: msg, rateLimited };
+      }
+    },
+  );

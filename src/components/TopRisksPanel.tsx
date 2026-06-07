@@ -44,9 +44,7 @@ function RecalibratingIndicator() {
   }, []);
 
   return (
-    <span className="text-sm text-primary font-medium">
-      Recalibrating Threat Matrix{dots}
-    </span>
+    <span className="text-sm text-primary font-medium">Recalibrating Threat Matrix{dots}</span>
   );
 }
 
@@ -93,9 +91,7 @@ function RiskItem({ risk, localFallback }: { risk: GeopoliticalRisk; localFallba
           {severityLabel(risk.severityScore)}
         </span>
         <span className="text-muted-foreground">{risk.regionAffected}</span>
-        {localFallback && (
-          <span className="text-muted-foreground italic">· local estimate</span>
-        )}
+        {localFallback && <span className="text-muted-foreground italic">· local estimate</span>}
       </div>
     </li>
   );

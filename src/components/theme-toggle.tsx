@@ -21,7 +21,13 @@ export function ThemeToggle() {
   const { theme, setTheme, resolved } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const Active = !mounted ? Moon : resolved === "dark" ? Moon : resolved === "light" ? Sun : Palette;
+  const Active = !mounted
+    ? Moon
+    : resolved === "dark"
+      ? Moon
+      : resolved === "light"
+        ? Sun
+        : Palette;
 
   return (
     <DropdownMenu>

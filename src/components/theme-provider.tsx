@@ -10,7 +10,10 @@ const ThemeContext = createContext<Ctx | null>(null);
 
 function resolve(theme: Theme): Resolved {
   if (theme === "system") {
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
       return "dark";
     }
     return "light";
