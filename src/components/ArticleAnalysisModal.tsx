@@ -84,6 +84,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
   const [cachedAt, setCachedAt] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usedFallback, setUsedFallback] = useState(false);
   const analyze = useServerFn(analyzeArticle);
 
   // Reset state when article changes; prefill from cache if present (no API call).
@@ -92,18 +93,20 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
     setCachedAt(null);
     setError(null);
     setLoading(false);
+    setUsedFallback(false);
     if (!article) return;
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(cacheKey(article));
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as CacheEntry;
-      if (!parsed?.cachedAt || !parsed.result) return;
-      if (Date.now() - parsed.cachedAt > CACHE_TTL_MS) return;
-      setResult(parsed.result);
-      setCachedAt(parsed.cachedAt);
-    } catch {
-      // ignore
+    const cached = readCache(article);
+    if (cached) {
+      setResult(cached);
+      try {
+        const raw = localStorage.getItem(cacheKey(article));
+        if (raw) {
+          const parsed = JSON.parse(raw) as CacheEntry;
+          if (parsed.cachedAt) setCachedAt(parsed.cachedAt);
+        }
+      } catch {
+        // ignore
+      }
     }
   }, [article]);
 
@@ -115,33 +118,41 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
       const cached = readCache(article);
       if (cached) {
         setResult(cached);
+        setUsedFallback(false);
         setError(null);
         return;
       }
     }
     setLoading(true);
     setError(null);
+    setUsedFallback(false);
     try {
       const res = await analyze({
         data: { title: article.title, summary: article.summary ?? "" },
       });
       if (res.error || !res.result) {
-        const msg = res.error ?? "Failed to analyze article.";
-        const quota = /quota|rate|429/i.test(msg)
-          ? "API quota reached. Please try again later."
-          : msg;
-        setError(quota);
+        const code = res.errorCode ?? classifyAIError(res.error);
+        console.error("[analyzeArticle] failure", code, res.error);
+        // Fallback: local analysis so the user is never left with a blank state.
+        const fallback = generateLocalArticleAnalysis(article);
+        setResult(fallback);
+        setUsedFallback(true);
+        setError(aiErrorMessage(code));
+        setCachedAt(null);
       } else {
         setResult(res.result);
         setCachedAt(Date.now());
+        setUsedFallback(false);
         writeCache(article, res.result);
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to analyze article.";
-      const quota = /quota|rate|429/i.test(msg)
-        ? "API quota reached. Please try again later."
-        : msg;
-      setError(quota);
+      const code = classifyAIError(e);
+      console.error("[analyzeArticle] threw", e);
+      const fallback = generateLocalArticleAnalysis(article);
+      setResult(fallback);
+      setUsedFallback(true);
+      setError(aiErrorMessage(code));
+      setCachedAt(null);
     } finally {
       setLoading(false);
     }
