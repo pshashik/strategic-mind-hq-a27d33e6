@@ -16,6 +16,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { askAssistant } from "@/lib/intelligence.functions";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getLatestNews, NewsItem } from "@/lib/news.functions";
+import { formatRelative, formatRelativeShort } from "@/lib/news-service";
 
 export const Route = createFileRoute("/assistant")({
   head: () => ({ meta: [{ title: "Research Assistant — StrategicMind AI" }] }),
@@ -48,15 +50,30 @@ function Assistant() {
   const [selectedModel, setSelectedModel] = useState<"gemini-2.5-flash-lite" | "gemini-2.5-flash">(
     "gemini-2.5-flash",
   );
+  const [articles, setArticles] = useState<NewsItem[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const ask = useServerFn(askAssistant);
+  const loadNews = useServerFn(getLatestNews);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, loading]);
+
+  useEffect(() => {
+    async function loadArticles() {
+      try {
+        const res = await loadNews();
+        setArticles(res.items ?? []);
+      } catch (err) {
+        console.error("Failed to load intelligence feed", err);
+      }
+    }
+
+    loadArticles();
+  }, [loadNews]);
 
   const send = async () => {
     if (!input.trim() || loading) return;
@@ -249,33 +266,32 @@ function Assistant() {
             <FileText className="size-4 text-primary" /> Source Articles
           </h2>
           <div className="overflow-y-auto space-y-3">
-            {[
-              {
-                t: "EU adopts 14th sanctions package targeting shadow fleet",
-                o: "Financial Times",
-                d: "2h ago",
-              },
-              {
-                t: "Shadow fleet rerouting through West African ports",
-                o: "Bloomberg",
-                d: "4h ago",
-              },
-              { t: "Port inspection regime tightens in Mediterranean", o: "Reuters", d: "6h ago" },
-              { t: "Russian oil discounts widen post-package", o: "Argus", d: "8h ago" },
-              { t: "Insurers re-evaluate maritime exposure", o: "Lloyd's List", d: "12h ago" },
-              { t: "G7 statement on enforcement coordination", o: "AP", d: "1d ago" },
-            ].map((a, i) => (
+            {articles.map((a, i) => (
               <a
-                key={i}
-                href="#"
-                className="block p-3 rounded-md border border-border/60 hover:border-primary/40 hover:bg-accent/20"
+                key={a.id}
+                href={a.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-3 rounded-md border border-border/60 hover:border-primary/40 hover:bg-accent/20 transition-colors"
               >
-                <div className="text-sm leading-snug text-foreground">{a.t}</div>
-                <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>{a.o}</span>
-                  <span className="inline-flex items-center gap-1">
-                    {a.d} <ExternalLink className="size-3" />
-                  </span>
+                <div className="flex items-start justify-between gap-3">
+                  {/* Article title */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm leading-5 text-foreground font-medium line-clamp-3">
+                      {a.title}
+                    </div>
+                  </div>
+
+                  {/* Source + Time */}
+                  <div className="w-19.5 shrink-0 text-right">
+                    <div className="text-[11px] text-muted-foreground leading-tight">
+                      {a.source}
+                    </div>
+
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      {formatRelativeShort(a.pubDate)}
+                    </div>
+                  </div>
                 </div>
               </a>
             ))}
