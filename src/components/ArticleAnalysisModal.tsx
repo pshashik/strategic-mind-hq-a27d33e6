@@ -131,7 +131,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
         data: { title: article.title, summary: article.summary ?? "" },
       });
       if (res.error || !res.result) {
-        const code = res.errorCode ?? classifyAIError(res.error);
+        const code = classifyAIError(res.error);
         console.error("[analyzeArticle] failure", code, res.error);
         // Fallback: local analysis so the user is never left with a blank state.
         const fallback = generateLocalArticleAnalysis(article);
