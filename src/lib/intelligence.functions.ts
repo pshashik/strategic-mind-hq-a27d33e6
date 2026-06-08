@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateLocalArticleAnalysis } from "@/lib/local-article-analysis";
+import type { AIErrorCode } from "@/lib/ai-errors";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "model"]),
