@@ -74,7 +74,8 @@ export function GlobalSearch() {
           id: `c-${c.countryCode}`,
           title: c.countryName,
           subtitle: `Risk ${c.riskScore} · ${c.mentionCount} mentions`,
-          href: `/country?code=${c.countryCode}`,
+          to: "/country",
+          search: { code: c.countryCode },
         });
       }
       if (out.filter((r) => r.kind === "country").length >= 5) break;
@@ -89,7 +90,7 @@ export function GlobalSearch() {
           id: `al-${al.id}`,
           title: al.title,
           subtitle: `${al.severity} · ${al.category}`,
-          href: "/",
+          to: "/",
         });
       }
       if (out.filter((r) => r.kind === "alert").length >= 5) break;
@@ -107,7 +108,7 @@ export function GlobalSearch() {
           id: `r-${r.riskName}`,
           title: r.riskName,
           subtitle: `Severity ${r.severityScore} · ${r.regionAffected}`,
-          href: "/",
+          to: "/",
         });
       }
       if (out.filter((r) => r.kind === "risk").length >= 5) break;
@@ -137,9 +138,8 @@ export function GlobalSearch() {
       window.open(r.externalUrl, "_blank", "noopener,noreferrer");
       return;
     }
-    if (r.href) {
-      // Use navigate with raw href; supports query strings.
-      navigate({ to: r.href });
+    if (r.to) {
+      navigate({ to: r.to, search: r.search ?? {} });
     }
   };
 
