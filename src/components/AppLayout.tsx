@@ -5,12 +5,13 @@ import {
   Globe2,
   Flag,
   GitBranch,
-  Radar,
+  //Radar,
   Search,
   Bell,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
+import company_logo from "../assets/main-logo.png";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -27,16 +28,17 @@ export function AppLayout({ children }: { children?: ReactNode }) {
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-xl">
         <div className="px-5 py-5 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
-            <div className="size-9 rounded-md bg-primary/15 flex items-center justify-center ring-1 ring-primary/30">
-              <Radar className="size-5 text-primary" />
+            <div>
+              {/* <Radar className="size-5 text-primary" /> */}
+              <img src={company_logo} alt="StrategicMind AI" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-gradient leading-tight">
+              {/* <div className="text-sm font-semibold text-gradient leading-tight">
                 StrategicMind AI
               </div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Intelligence Suite
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
