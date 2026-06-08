@@ -4,12 +4,15 @@ import { useArticles } from "@/hooks/use-articles";
 import { computeTrendingCountries } from "@/lib/countries.functions";
 import { formatRelative, type NewsItem } from "@/lib/news-service";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Flag, Activity, FileText, AlertTriangle, ExternalLink } from "lucide-react";
 import type { RiskLevel } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/country")({
   head: () => ({ meta: [{ title: "Country Intelligence — StrategicMind AI" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search.code === "string" ? search.code.toUpperCase() : undefined,
+  }),
   component: CountryPage,
 });
 
@@ -77,8 +80,13 @@ function activityLabel(count: number): string {
 
 function CountryPage() {
   const { articles, loading } = useArticles();
+  const { code: codeFromUrl } = Route.useSearch();
   const [q, setQ] = useState("");
   const [code, setCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (codeFromUrl) setCode(codeFromUrl);
+  }, [codeFromUrl]);
 
   const trending = useMemo(() => computeTrendingCountries(articles), [articles]);
 
