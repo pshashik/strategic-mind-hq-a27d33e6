@@ -86,7 +86,14 @@ export const askAssistant = createServerFn({ method: "POST" })
 
 export const simulateScenario = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ScenarioInputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: ScenarioResult | null;
+      error: string | null;
+      errorCode?: string;
+    }> => {
     const scenario = data.scenario.trim();
     const riskScore = scenarioRiskScore(scenario);
     const elevated = riskScore >= 65;
@@ -110,14 +117,19 @@ export const simulateScenario = createServerFn({ method: "POST" })
 
 export const analyzeArticle = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ArticleInputSchema.parse(input))
-  .handler(async ({ data }): Promise<{ result: ArticleAnalysis | null; error: string | null }> => {
-    const result = generateLocalArticleAnalysis({
-      id: data.title,
-      title: data.title,
-      summary: data.summary,
-      source: "Local analysis",
-      link: "",
-    });
+  .handler(
+    async ({
+      data,
+    }): Promise<{
+      result: ArticleAnalysis | null;
+      error: string | null;
+      errorCode?: string;
+    }> => {
+      const result = generateLocalArticleAnalysis({
+        title: data.title,
+        summary: data.summary,
+      });
 
-    return { result, error: null };
-  });
+      return { result, error: null };
+    },
+  );
