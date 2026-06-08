@@ -6,11 +6,11 @@ import {
   Flag,
   GitBranch,
   //Radar,
-  Search,
   Bell,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
+import { GlobalSearch } from "./GlobalSearch";
 import company_logo from "../assets/main-logo.png";
 
 const nav = [
@@ -74,13 +74,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border/60 bg-background/50 backdrop-blur-xl flex items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-3 flex-1 max-w-xl">
-            <Search className="size-4 text-muted-foreground" />
-            <input
-              placeholder="Search intelligence, countries, events…"
-              className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-            />
-          </div>
+          <GlobalSearch />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <button className="relative p-2 rounded-md hover:bg-accent/40">
