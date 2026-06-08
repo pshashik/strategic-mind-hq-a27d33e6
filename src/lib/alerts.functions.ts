@@ -80,7 +80,7 @@ export function generateLocalAlerts(
 }
 
 export const synthesizeStrategicAlerts = createServerFn({ method: "POST" })
-  .validator((input: unknown) => InputSchema.parse(input))
+  .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data }): Promise<{ result: StrategicAlert[] | null; error: string | null }> => {
     try {
       return { result: generateLocalAlerts(data.articles), error: null };

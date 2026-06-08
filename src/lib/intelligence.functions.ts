@@ -74,7 +74,7 @@ function scenarioRiskScore(text: string): number {
 export const askAssistant = createServerFn({
   method: "POST",
 })
-  .validator((input: unknown) => AssistantInputSchema.parse(input))
+  .inputValidator((input: unknown) => AssistantInputSchema.parse(input))
   .handler(
     async ({
       data,
@@ -541,7 +541,7 @@ const result =
   );
 
 export const simulateScenario = createServerFn({ method: "POST" })
-  .validator((input: unknown) => ScenarioInputSchema.parse(input))
+  .inputValidator((input: unknown) => ScenarioInputSchema.parse(input))
   .handler(
     async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
       try {
@@ -591,7 +591,7 @@ RULES:
 
 
 export const analyzeArticle = createServerFn({ method: "POST" })
-  .validator((input: unknown) => ArticleInputSchema.parse(input))
+  .inputValidator((input: unknown) => ArticleInputSchema.parse(input))
   .handler(
     async ({
       data,
