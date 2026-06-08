@@ -13,7 +13,8 @@ interface SearchResult {
   id: string;
   title: string;
   subtitle?: string;
-  href?: string;
+  to?: string;
+  search?: Record<string, string>;
   externalUrl?: string;
 }
 
