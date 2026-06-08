@@ -10,6 +10,9 @@ import type { RiskLevel } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/country")({
   head: () => ({ meta: [{ title: "Country Intelligence — StrategicMind AI" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    code: typeof search.code === "string" ? search.code.toUpperCase() : undefined,
+  }),
   component: CountryPage,
 });
 
