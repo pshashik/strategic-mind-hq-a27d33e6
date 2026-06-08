@@ -93,7 +93,7 @@ export const simulateScenario = createServerFn({ method: "POST" })
     }): Promise<{
       result: ScenarioResult | null;
       error: string | null;
-      errorCode?: string;
+      errorCode?: AIErrorCode;
     }> => {
     const scenario = data.scenario.trim();
     const riskScore = scenarioRiskScore(scenario);
@@ -124,7 +124,7 @@ export const analyzeArticle = createServerFn({ method: "POST" })
     }): Promise<{
       result: ArticleAnalysis | null;
       error: string | null;
-      errorCode?: string;
+      errorCode?: AIErrorCode;
     }> => {
       const result = generateLocalArticleAnalysis({
         title: data.title,
