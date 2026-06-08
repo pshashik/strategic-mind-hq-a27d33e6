@@ -11,7 +11,7 @@ import {
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./GlobalSearch";
-import company_logo from "../assets/main-logo.png";
+import company_logo from "../assets/logo.png";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -26,23 +26,21 @@ export function AppLayout({ children }: { children?: ReactNode }) {
   return (
     <div className="min-h-screen flex w-full">
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-xl">
-        <div className="px-5 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-2">
-            <div>
-              {/* <Radar className="size-5 text-primary" /> */}
-              <img src={company_logo} alt="StrategicMind AI" />
-            </div>
-            <div>
-              {/* <div className="text-sm font-semibold text-gradient leading-tight">
+        <div className="px-6 py-4 border-b border-sidebar-border">
+          <div className="flex items-center gap-3">
+            <img src={company_logo} alt="StrategicMind AI" className="h-8 w-auto object-contain" />
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gradient leading-tight">
                 StrategicMind AI
-              </div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              </span>
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Intelligence Suite
-              </div> */}
+              </span>
             </div>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
+
+        <nav className="flex-1 px-4 py-6 space-y-2">
           {nav.map((item) => {
             const Icon = item.icon;
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
@@ -56,12 +54,13 @@ export function AppLayout({ children }: { children?: ReactNode }) {
                     : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60"
                 }`}
               >
-                <Icon className="size-4" />
-                <span>{item.label}</span>
+                <Icon className="size-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
         </nav>
+
         <div className="p-4 border-t border-sidebar-border text-xs text-muted-foreground">
           <div className="flex items-center justify-between">
             <span>System</span>
@@ -72,8 +71,10 @@ export function AppLayout({ children }: { children?: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b border-border/60 bg-background/50 backdrop-blur-xl flex items-center justify-between px-4 md:px-6">
+      <div className="flex-1 flex flex-col min-w-0 overflow-visible">
+        {/* <div className="flex-1 flex flex-col min-w-0"> */}
+        {/* <header className="h-14 border-b border-border/60 bg-background/50 backdrop-blur-xl flex items-center justify-between px-4 md:px-6"> */}
+        <header className="relative overflow-visible h-14 border-b border-border/60 bg-background/50 backdrop-blur-xl flex items-center justify-between px-4 md:px-6">
           <GlobalSearch />
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -81,8 +82,8 @@ export function AppLayout({ children }: { children?: ReactNode }) {
               <Bell className="size-4" />
               <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-risk-critical" />
             </button>
-            <div className="size-8 rounded-full bg-gradient-to-br from-primary/60 to-accent flex items-center justify-center text-xs font-medium text-primary-foreground">
-              AN
+            <div className="size-8 rounded-full bg-linear-to-br from-primary/60 to-accent flex items-center justify-center text-xs font-medium text-primary-foreground">
+              SP
             </div>
           </div>
         </header>

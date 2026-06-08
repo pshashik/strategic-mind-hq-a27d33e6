@@ -20,7 +20,7 @@ export interface GeopoliticalRisk {
 }
 
 export const synthesizeTopRisks = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .validator((input: unknown) => InputSchema.parse(input))
   .handler(
     async ({
       data,

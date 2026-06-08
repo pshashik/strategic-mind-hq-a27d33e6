@@ -33,6 +33,9 @@ function Simulator() {
   const [result, setResult] = useState<ScenarioResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<"gemini-2.5-flash-lite" | "gemini-2.5-flash">(
+    "gemini-2.5-flash",
+  );
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const simulate = useServerFn(simulateScenario);
@@ -49,7 +52,7 @@ function Simulator() {
     setError(null);
     setResult(null);
     try {
-      const res = await simulate({ data: { scenario: scenario.trim() } });
+      const res = await simulate({ data: { scenario: scenario.trim(), model: selectedModel } });
       if (res.error || !res.result) {
         const code = classifyAIError(res.error);
         console.error("[simulateScenario] failure", code, res.error);
@@ -82,6 +85,19 @@ function Simulator() {
         <div className="grid lg:grid-cols-[420px_1fr] gap-5 items-start">
           {/* Left: input */}
           <section className="glass-card rounded-xl p-5 space-y-4">
+            <div className="flex justify-end">
+              <select
+                value={selectedModel}
+                onChange={(e) =>
+                  setSelectedModel(e.target.value as "gemini-2.5-flash-lite" | "gemini-2.5-flash")
+                }
+                className="bg-background border border-border rounded-md px-2 py-1 text-xs"
+              >
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+
+                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+              </select>
+            </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground">
                 Geopolitical Scenario
@@ -146,7 +162,7 @@ function Simulator() {
           </section>
 
           {/* Right: results */}
-          <section ref={resultsRef} className="min-h-[420px]">
+          <section ref={resultsRef} className="min-h-105">
             {!result && !loading && <EmptyState />}
             {loading && <LoadingState />}
             {result && <Results data={result} />}
@@ -159,7 +175,7 @@ function Simulator() {
 
 function EmptyState() {
   return (
-    <div className="glass-card rounded-xl h-full min-h-[420px] flex flex-col items-center justify-center text-center p-10">
+    <div className="glass-card rounded-xl h-full min-h-105 flex flex-col items-center justify-center text-center p-10">
       <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
         <GitBranch className="size-6 text-primary" />
       </div>
@@ -175,7 +191,7 @@ function EmptyState() {
 
 function LoadingState() {
   return (
-    <div className="glass-card rounded-xl h-full min-h-[420px] flex flex-col items-center justify-center text-center p-10">
+    <div className="glass-card rounded-xl h-full min-h-105 flex flex-col items-center justify-center text-center p-10">
       <Loader2 className="size-7 text-primary animate-spin mb-3" />
       <div className="text-sm text-foreground font-medium">Running multi-outcome simulation…</div>
       <div className="text-xs text-muted-foreground mt-1">

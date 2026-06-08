@@ -201,7 +201,7 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
               <div className="flex flex-col items-center gap-2 py-2">
                 <button
                   onClick={() => runAnalysis(false)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-gradient-to-r from-primary to-primary/70 text-primary-foreground text-sm font-medium shadow-sm hover:opacity-90 transition"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-md bg-linear-to-r from-primary to-primary/70 text-primary-foreground text-sm font-medium shadow-sm hover:opacity-90 transition"
                 >
                   <Sparkles className="size-4" /> Analyze Intelligence Report
                 </button>
@@ -252,7 +252,8 @@ export function ArticleAnalysisModal({ article, onOpenChange }: Props) {
                     onClick={() => runAnalysis(true)}
                     className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border/60 hover:bg-accent/40"
                   >
-                    <Sparkles className="size-3.5" /> {usedFallback ? "Retry analysis" : "Re-run analysis"}
+                    <Sparkles className="size-3.5" />{" "}
+                    {usedFallback ? "Retry analysis" : "Re-run analysis"}
                   </button>
                 </div>
               </>

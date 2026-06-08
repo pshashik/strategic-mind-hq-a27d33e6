@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout } from "@/components/AppLayout";
+import { Badge } from "@/components/ui/badge";
 import { useState, useRef, useEffect } from "react";
 import {
   Send,
@@ -44,6 +45,9 @@ function Assistant() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<"gemini-2.5-flash-lite" | "gemini-2.5-flash">(
+    "gemini-2.5-flash",
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const ask = useServerFn(askAssistant);
@@ -71,7 +75,7 @@ function Assistant() {
     setLoading(true);
 
     try {
-      const res = await ask({ data: { history, question: q } });
+      const res = await ask({ data: { history, question: q, model: selectedModel } });
       if (res.error || !res.text) {
         setError(res.error || "No response received.");
         setMessages((m) => m.slice(0, -1));
@@ -111,9 +115,35 @@ function Assistant() {
                 Ask geopolitical questions with local intelligence heuristics.
               </p>
             </div>
-            <span className="text-[11px] px-2 py-0.5 rounded border border-primary/30 text-primary bg-primary/10">
-              local-analysis
-            </span>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedModel}
+                onChange={(e) =>
+                  setSelectedModel(e.target.value as "gemini-2.5-flash-lite" | "gemini-2.5-flash")
+                }
+                className="bg-background border border-border rounded-md px-2 py-1 text-xs"
+              >
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+
+                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+              </select>
+
+              {selectedModel === "gemini-2.5-flash" ? (
+                <Badge
+                  variant="secondary"
+                  className="bg-primary/10 text-primary border border-primary/20"
+                >
+                  Strategic Analysis Mode
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">
+                  Rapid Intelligence Mode
+                </Badge>
+              )}
+            </div>
+            {/* <span className="text-[11px] px-2 py-0.5 rounded border border-primary/30 text-primary bg-primary/10">
+              Gemini Intelligence
+            </span> */}
           </header>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-5">
