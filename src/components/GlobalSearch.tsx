@@ -139,7 +139,7 @@ export function GlobalSearch() {
       return;
     }
     if (r.to) {
-      navigate({ to: r.to, search: r.search ?? {} });
+      navigate({ to: r.to, search: (r.search ?? {}) as never });
     }
   };
 
