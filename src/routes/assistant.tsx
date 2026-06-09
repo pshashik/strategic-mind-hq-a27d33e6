@@ -288,7 +288,7 @@ function Assistant() {
                       {a.source}
                     </div>
 
-                    <div className="text-[10px] text-muted-foreground mt-1">
+                    <div className="text-[10px] text-muted-foreground mt-1" suppressHydrationWarning>
                       {formatRelativeShort(a.pubDate)}
                     </div>
                   </div>
