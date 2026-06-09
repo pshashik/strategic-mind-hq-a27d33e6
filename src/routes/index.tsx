@@ -124,7 +124,7 @@ function buildMetrics(articles: NewsItem[]): DashboardMetric[] {
 
   return [
     { label: "Active Conflicts", value: String(activeConflicts) },
-    { label: "Critical Alerts", value: String(criticalAlerts) },
+    { label: "Priority Alerts", value: String(criticalAlerts) },
     { label: "Countries Monitored", value: String(Math.max(countries.size, 1)) },
     { label: "Sources Today", value: String(sources.size) },
   ];
