@@ -177,7 +177,7 @@ function Dashboard() {
               Transforming global news into strategic intelligence.
             </p>
           </div>
-          <div className="text-xs text-muted-foreground" aria-live="polite">
+          <div className="text-xs text-muted-foreground" aria-live="polite" suppressHydrationWarning>
             Last Sync: {lastSync}
           </div>
         </div>
