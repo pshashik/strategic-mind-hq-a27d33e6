@@ -85,7 +85,9 @@ function RiskMap() {
                     key={band}
                     className={`px-2 py-1 rounded border ${riskBandBadgeClass(band)}`}
                   >
-                    <span className={`inline-block size-2 rounded-full mr-1.5 ${riskBandBarClass(band)}`} />
+                    <span
+                      className={`inline-block size-2 rounded-full mr-1.5 ${riskBandBarClass(band)}`}
+                    />
                     {riskBandLabel(band)} ({range})
                   </span>
                 ))}

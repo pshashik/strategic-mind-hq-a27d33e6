@@ -347,22 +347,96 @@ function phraseForTopic(topic: string): string {
   return titleCase(normalized);
 }
 
-function buildSummarySentenceSet(metrics: ExecutiveSummaryMetrics): string {
-  const regionSentence =
-    metrics.secondaryRegion &&
-    metrics.secondaryRegion !== metrics.highestRiskRegion &&
-    metrics.secondaryRegion !== DEFAULT_REGION
-      ? `Global geopolitical activity remains focused on ${metrics.highestRiskRegion} and ${metrics.secondaryRegion}.`
-      : `Global geopolitical activity remains focused on ${metrics.highestRiskRegion}.`;
+// function buildSummarySentenceSet(metrics: ExecutiveSummaryMetrics): string {
+//   const regionSentence =
+//     metrics.secondaryRegion &&
+//     metrics.secondaryRegion !== metrics.highestRiskRegion &&
+//     metrics.secondaryRegion !== DEFAULT_REGION
+//       ? `Global geopolitical activity remains focused on ${metrics.highestRiskRegion} and ${metrics.secondaryRegion}.`
+//       : `Global geopolitical activity remains focused on ${metrics.highestRiskRegion}.`;
 
-  const countrySentence =
-    metrics.mostMentionedCountry === DEFAULT_COUNTRY
-      ? "Country references remain diffuse across current developments."
-      : `${metrics.mostMentionedCountry} is the most frequently referenced country across current developments.`;
+//   const countrySentence =
+//     metrics.mostMentionedCountry === DEFAULT_COUNTRY
+//       ? "Country references remain diffuse across current developments."
+//       : `${metrics.mostMentionedCountry} is the most frequently referenced country across current developments.`;
 
-  const topicSentence = `${phraseForTopic(metrics.mostCommonTopic)} activity remains the dominant theme, with several articles indicating elevated tensions and increased strategic engagement across key regions.`;
+//   const topicSentence = `${phraseForTopic(metrics.mostCommonTopic)} activity remains the dominant theme, with several articles indicating elevated tensions and increased strategic engagement across key regions.`;
 
-  return [regionSentence, countrySentence, topicSentence].join("\n\n");
+//   return [regionSentence, countrySentence, topicSentence].join("\n\n");
+// }
+
+function buildHumanExecutiveSummary(
+  articles: NormalizedArticle[],
+  metrics: ExecutiveSummaryMetrics,
+): string {
+  if (!articles.length) {
+    return "No significant geopolitical developments detected.";
+  }
+
+  const text = articles
+    .map((a) => `${a.title} ${a.description}`)
+    .join(" ")
+    .toLowerCase();
+
+  const confidence = articles.length >= 5 ? "High" : articles.length >= 3 ? "Medium" : "Low";
+
+  // Middle East
+  if (/iran|israel|gaza|hamas|hezbollah|houthi|tehran|red sea|hormuz/.test(text)) {
+    return `
+Middle East tensions remain elevated following continued developments involving Iran, Israel, and regional actors.
+
+Recent reporting indicates heightened international attention on the trajectory of the conflict and its broader regional implications.
+
+Military and strategic-security themes dominate current reporting, increasing the potential for wider regional instability and economic disruption.
+
+Current indicators suggest continued geopolitical volatility with potential implications for energy markets, diplomatic engagement, and maritime security.
+
+Intelligence Confidence: ${confidence}
+`.trim();
+  }
+
+  // Russia-Ukraine
+  if (/russia|ukraine|moscow|kyiv|donbas|crimea/.test(text)) {
+    return `
+European security remains under pressure as developments related to Russia and Ukraine continue to shape regional risk dynamics.
+
+Military activity, sanctions policy, and diplomatic engagement remain key drivers of strategic uncertainty across the region.
+
+Current reporting suggests continued volatility with implications for NATO posture, energy markets, and broader geopolitical stability.
+
+Intelligence Confidence: ${confidence}
+`.trim();
+  }
+
+  // Indo-Pacific
+  if (/china|taiwan|south china sea|beijing|philippines/.test(text)) {
+    return `
+Indo-Pacific strategic competition remains a central focus of current intelligence reporting.
+
+China-Taiwan developments and broader regional security activity continue to drive geopolitical attention across critical maritime corridors.
+
+Current indicators suggest sustained military signaling, increased diplomatic engagement, and heightened regional security concerns.
+
+Intelligence Confidence: ${confidence}
+`.trim();
+  }
+
+  // Generic fallback
+  return `
+Recent reporting highlights elevated activity across ${metrics.highestRiskRegion}.
+
+${metrics.mostCommonTopic.charAt(0).toUpperCase() + metrics.mostCommonTopic.slice(1)} activity remains the dominant strategic theme, contributing to increased geopolitical uncertainty.
+
+${
+  metrics.mostMentionedCountry !== "Multiple countries"
+    ? `${metrics.mostMentionedCountry} remains a significant actor across current developments.`
+    : "Multiple state and non-state actors are contributing to the evolving strategic landscape."
+}
+
+Analysts should monitor potential second-order effects on regional security, diplomacy, trade flows, and economic stability.
+
+Intelligence Confidence: ${confidence}
+`.trim();
 }
 
 export function buildExecutiveSummaryMetrics(
@@ -380,7 +454,7 @@ export function buildExecutiveSummaryMetrics(
         article.riskScore > 0,
     )
     .sort(sortByRiskThenOrder)
-    .slice(0, 5);
+    .slice(0, 15);
 
   if (normalized.length === 0) {
     return {
@@ -421,13 +495,29 @@ export function buildExecutiveSummaryMetrics(
   };
 }
 
+// export function generateExecutiveSummary(
+//   articles: readonly ExecutiveSummaryArticle[],
+// ): ExecutiveSummaryResult {
+//   const metrics = buildExecutiveSummaryMetrics(articles);
+//   return {
+//     metrics,
+//     summary: buildSummarySentenceSet(metrics),
+//   };
+// }
+
 export function generateExecutiveSummary(
   articles: readonly ExecutiveSummaryArticle[],
 ): ExecutiveSummaryResult {
   const metrics = buildExecutiveSummaryMetrics(articles);
+
+  const normalized = articles
+    .map((article, index) => normalizeArticle(article, index))
+    .sort(sortByRiskThenOrder)
+    .slice(0, 5);
+
   return {
     metrics,
-    summary: buildSummarySentenceSet(metrics),
+    summary: buildHumanExecutiveSummary(normalized, metrics),
   };
 }
 

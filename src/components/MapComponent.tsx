@@ -59,7 +59,9 @@ function featureName(feature: CountryFeature): string {
 
 function featureRegion(feature: CountryFeature): string {
   const props = feature.properties ?? {};
-  return String(props.subregion ?? props.SUBREGION ?? props.continent ?? props.CONTINENT ?? "Global");
+  return String(
+    props.subregion ?? props.SUBREGION ?? props.continent ?? props.CONTINENT ?? "Global",
+  );
 }
 
 function escapeHtml(value: string): string {
@@ -78,11 +80,7 @@ function riskFillColor(country?: MapCountryRisk): string {
   return "#10b981";
 }
 
-function MapComponent({
-  countries,
-  onSelect,
-  selectedCountryCode,
-}: MapComponentProps) {
+function MapComponent({ countries, onSelect, selectedCountryCode }: MapComponentProps) {
   const [geoJsonData, setGeoJsonData] = useState<FeatureCollection | null>(null);
 
   const riskLookup = useMemo(() => {
@@ -150,9 +148,8 @@ function MapComponent({
     const countryName = cData?.name ?? featureName(feature);
     const riskScore = cData ? cData.riskScore : 0;
     const articleCount = cData ? cData.articleCount : 0;
-    const factors = cData && cData.topRiskFactors.length > 0
-      ? cData.topRiskFactors.join(", ")
-      : "None";
+    const factors =
+      cData && cData.topRiskFactors.length > 0 ? cData.topRiskFactors.join(", ") : "None";
     const latestHeadline = cData?.latestHeadline || "No matching feed headline";
     const riskColor = riskScore >= 7 ? "#f87171" : riskScore >= 4 ? "#fbbf24" : "#34d399";
 
@@ -226,7 +223,12 @@ function MapComponent({
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
-        <GeoJSON key={selectedCountryCode || "default"} data={geoJsonData} style={getStyle} onEachFeature={onEachFeature} />
+        <GeoJSON
+          key={selectedCountryCode || "default"}
+          data={geoJsonData}
+          style={getStyle}
+          onEachFeature={onEachFeature}
+        />
       </MapContainer>
     </div>
   );

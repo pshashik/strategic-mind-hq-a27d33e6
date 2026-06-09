@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { decodeHtmlEntities } from "./utils";
 
 export type NewsItem = {
   id: string;
@@ -35,9 +36,9 @@ function parseFeed(xml: string, source: NewsItem["source"]): NewsItem[] {
   const items = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
   return items
     .map((raw, i) => {
-      const title = pick(raw, "title");
+      const title = decodeHtmlEntities(pick(raw, "title"));
       const link = pick(raw, "link");
-      const desc = pick(raw, "description");
+      const desc = decodeHtmlEntities(pick(raw, "description"));
       const date = pick(raw, "pubDate") || pick(raw, "dc:date") || pick(raw, "date");
       const ts = date ? Date.parse(date) : NaN;
       return {
@@ -66,21 +67,67 @@ async function fetchFeed(url: string, source: NewsItem["source"]): Promise<NewsI
 
 export const getLatestNews = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ items: NewsItem[]; cachedAt: number }> => {
-    if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
-      return { items: cache.items, cachedAt: cache.at };
+    try {
+      // Return cached data if still valid
+      if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
+        return {
+          items: cache.items,
+          cachedAt: cache.at,
+        };
+      }
+
+      const results = await Promise.allSettled(
+        FEEDS.map((feed) => fetchFeed(feed.url, feed.source)),
+      );
+
+      const rawItems = results.flatMap((result) =>
+        result.status === "fulfilled" ? result.value : [],
+      );
+
+      // Remove invalid entries
+      const validItems = rawItems.filter((item) => item.title?.trim() && item.link?.trim());
+
+      // Deduplicate by URL
+      const uniqueItems = Array.from(
+        new Map(validItems.map((item) => [item.link.trim(), item])).values(),
+      );
+
+      // Sort newest first
+      uniqueItems.sort((a, b) => b.pubDate - a.pubDate);
+
+      const topItems = uniqueItems.slice(0, 20);
+
+      // If feeds fail but cache exists, serve stale cache
+      if (topItems.length === 0 && cache) {
+        return {
+          items: cache.items,
+          cachedAt: cache.at,
+        };
+      }
+
+      cache = {
+        at: Date.now(),
+        items: topItems,
+      };
+
+      return {
+        items: topItems,
+        cachedAt: cache.at,
+      };
+    } catch (error) {
+      console.error("[News Feed Error]", error);
+
+      if (cache) {
+        return {
+          items: cache.items,
+          cachedAt: cache.at,
+        };
+      }
+
+      return {
+        items: [],
+        cachedAt: Date.now(),
+      };
     }
-
-    const results = await Promise.allSettled(FEEDS.map((f) => fetchFeed(f.url, f.source)));
-    const items = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-    items.sort((a, b) => b.pubDate - a.pubDate);
-    const top = items.slice(0, 20);
-
-    // Serve stale cache if every feed failed
-    if (top.length === 0 && cache) {
-      return { items: cache.items, cachedAt: cache.at };
-    }
-
-    cache = { at: Date.now(), items: top };
-    return { items: top, cachedAt: cache.at };
   },
 );

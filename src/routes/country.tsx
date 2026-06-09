@@ -17,12 +17,24 @@ export const Route = createFileRoute("/country")({
 });
 
 const COUNTRY_PATTERNS: { code: string; name: string; pattern: RegExp }[] = [
-  { code: "US", name: "United States", pattern: /\b(united states|u\.s\.|usa|american|washington|pentagon|white house)\b/i },
-  { code: "UK", name: "United Kingdom", pattern: /\b(united kingdom|britain|british|london|westminster)\b/i },
+  {
+    code: "US",
+    name: "United States",
+    pattern: /\b(united states|u\.s\.|usa|american|washington|pentagon|white house)\b/i,
+  },
+  {
+    code: "UK",
+    name: "United Kingdom",
+    pattern: /\b(united kingdom|britain|british|london|westminster)\b/i,
+  },
   { code: "RU", name: "Russia", pattern: /\b(russia|russian|moscow|kremlin)\b/i },
   { code: "CN", name: "China", pattern: /\b(china|chinese|beijing|shanghai)\b/i },
   { code: "UA", name: "Ukraine", pattern: /\b(ukraine|ukrainian|kyiv|kiev|donbas|crimea)\b/i },
-  { code: "IL", name: "Israel", pattern: /\b(israel|israeli|tel aviv|jerusalem|gaza|hamas|hezbollah|netanyahu)\b/i },
+  {
+    code: "IL",
+    name: "Israel",
+    pattern: /\b(israel|israeli|tel aviv|jerusalem|gaza|hamas|hezbollah|netanyahu)\b/i,
+  },
   { code: "IR", name: "Iran", pattern: /\b(iran|iranian|tehran)\b/i },
   { code: "TW", name: "Taiwan", pattern: /\b(taiwan|taiwanese|taipei)\b/i },
   { code: "KP", name: "North Korea", pattern: /\b(north korea|pyongyang|dprk)\b/i },
@@ -44,7 +56,11 @@ const COUNTRY_PATTERNS: { code: string; name: string; pattern: RegExp }[] = [
   { code: "SD", name: "Sudan", pattern: /\b(sudan|sudanese|khartoum)\b/i },
   { code: "ET", name: "Ethiopia", pattern: /\b(ethiopia|ethiopian|addis ababa)\b/i },
   { code: "NG", name: "Nigeria", pattern: /\b(nigeria|nigerian|abuja|lagos)\b/i },
-  { code: "ZA", name: "South Africa", pattern: /\b(south africa|south african|pretoria|johannesburg)\b/i },
+  {
+    code: "ZA",
+    name: "South Africa",
+    pattern: /\b(south africa|south african|pretoria|johannesburg)\b/i,
+  },
   { code: "AU", name: "Australia", pattern: /\b(australia|australian|canberra|sydney)\b/i },
   { code: "JP", name: "Japan", pattern: /\b(japan|japanese|tokyo)\b/i },
   { code: "AF", name: "Afghanistan", pattern: /\b(afghanistan|afghan|kabul|taliban)\b/i },
@@ -53,14 +69,35 @@ const COUNTRY_PATTERNS: { code: string; name: string; pattern: RegExp }[] = [
 ];
 
 const THEME_PATTERNS: { label: string; pattern: RegExp }[] = [
-  { label: "Military Operations", pattern: /\b(military|troops|army|navy|airstrike|missile|drone|war|combat|offensive)\b/i },
-  { label: "Diplomatic Engagement", pattern: /\b(diplomatic|summit|talks|negotiat|ambassador|treaty|ceasefire)\b/i },
-  { label: "Economic Pressure", pattern: /\b(sanctions?|tariff|trade|embargo|currency|inflation|economy|oil|gas)\b/i },
+  {
+    label: "Military Operations",
+    pattern: /\b(military|troops|army|navy|airstrike|missile|drone|war|combat|offensive)\b/i,
+  },
+  {
+    label: "Diplomatic Engagement",
+    pattern: /\b(diplomatic|summit|talks|negotiat|ambassador|treaty|ceasefire)\b/i,
+  },
+  {
+    label: "Economic Pressure",
+    pattern: /\b(sanctions?|tariff|trade|embargo|currency|inflation|economy|oil|gas)\b/i,
+  },
   { label: "Nuclear & WMD", pattern: /\b(nuclear|enrichment|warhead|icbm|chemical weapon)\b/i },
-  { label: "Internal Security", pattern: /\b(protest|unrest|coup|insurgent|riot|crackdown|election)\b/i },
-  { label: "Cyber & Intelligence", pattern: /\b(cyber|hack|espionage|intelligence|surveillance)\b/i },
-  { label: "Humanitarian Crisis", pattern: /\b(refugee|famine|humanitarian|aid|displaced|civilian casualt)\b/i },
-  { label: "Alliance & Coalition", pattern: /\b(nato|allies|coalition|partnership|defense pact)\b/i },
+  {
+    label: "Internal Security",
+    pattern: /\b(protest|unrest|coup|insurgent|riot|crackdown|election)\b/i,
+  },
+  {
+    label: "Cyber & Intelligence",
+    pattern: /\b(cyber|hack|espionage|intelligence|surveillance)\b/i,
+  },
+  {
+    label: "Humanitarian Crisis",
+    pattern: /\b(refugee|famine|humanitarian|aid|displaced|civilian casualt)\b/i,
+  },
+  {
+    label: "Alliance & Coalition",
+    pattern: /\b(nato|allies|coalition|partnership|defense pact)\b/i,
+  },
 ];
 
 function riskLevelFromScore(score: number): RiskLevel {
@@ -153,9 +190,11 @@ function CountryPage() {
     if (!selected || countryArticles.length === 0) return "";
     const level = selected.risk;
     const map: Record<RiskLevel, string> = {
-      critical: "Critical exposure — sustained high-intensity reporting indicates active escalation vectors that warrant immediate analyst attention.",
+      critical:
+        "Critical exposure — sustained high-intensity reporting indicates active escalation vectors that warrant immediate analyst attention.",
       high: "Elevated exposure — meaningful concentration of strategic signals suggests an evolving situation with material downside risk.",
-      medium: "Moderate exposure — ongoing developments visible in the feed but no acute crisis indicators at this time.",
+      medium:
+        "Moderate exposure — ongoing developments visible in the feed but no acute crisis indicators at this time.",
       low: "Limited exposure — current reporting volume is low; maintain routine monitoring.",
     };
     return map[level];

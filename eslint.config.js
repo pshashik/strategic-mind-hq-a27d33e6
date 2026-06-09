@@ -6,7 +6,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  // Global ignores
   { ignores: ["dist", ".output", ".vinxi"] },
+
+  // Main linting configuration for TypeScript & React
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -36,5 +39,10 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
-  eslintPluginPrettier,
+
+  // Prettier plugin config (handles rules and layout formatting conflicts)
+  {
+    files: ["**/*.{ts,tsx,js,jsx}"],
+    ...eslintPluginPrettier,
+  },
 );

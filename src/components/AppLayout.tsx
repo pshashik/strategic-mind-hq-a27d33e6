@@ -93,6 +93,7 @@ export function AppLayout({ children }: { children?: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function riskColor(level: "low" | "medium" | "high" | "critical") {
   return {
     low: "text-risk-low bg-risk-low/10 border-risk-low/30",

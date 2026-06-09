@@ -48,7 +48,7 @@ export function LatestIntelligenceFeed({ articles, loading, refreshing, error, o
           ))}
         </ul>
       ) : (
-        <ul className="space-y-2.5 max-h-[640px] overflow-y-auto pr-1">
+        <ul className="space-y-2.5 max-h-160 overflow-y-auto pr-1">
           {articles.map((n) => {
             const isBBC = n.source === "BBC News";
             return (

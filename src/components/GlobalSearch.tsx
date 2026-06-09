@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "@tanstack/react-router";

@@ -12,6 +12,7 @@ import { formatRelative, type NewsItem } from "@/lib/news-service";
 import { generateLocalAlerts } from "@/lib/alerts.functions";
 import { buildExecutiveSummaryMetrics } from "@/lib/simple-briefing";
 import type { RiskLevel } from "@/lib/mock-data";
+import { deriveArticleSeverity } from "@/lib/risk-engine";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard — StrategicMind AI" }] }),
@@ -21,14 +22,18 @@ export const Route = createFileRoute("/")({
 const CONFLICT_RX =
   /\b(war|conflict|invasion|airstrike|missile|drone|attack|bombard|clash|shelling|insurgent|coup|skirmish|battle|troops?)\b/i;
 
+// function deriveSeverity(article: NewsItem): RiskLevel {
+//   const text = `${article.title} ${article.summary ?? ""}`;
+//   if (/\b(war|invasion|missile|airstrike|nuclear|massacre|atrocity|kill(?:ed|s)?)\b/i.test(text))
+//     return "critical";
+//   if (CONFLICT_RX.test(text) || /\bsanctions?|blockade|embargo\b/i.test(text)) return "high";
+//   if (/\b(protest|tension|negotiat|summit|talks|ceasefire|sanction|tariff)\b/i.test(text))
+//     return "medium";
+//   return "low";
+// }
+
 function deriveSeverity(article: NewsItem): RiskLevel {
-  const text = `${article.title} ${article.summary ?? ""}`;
-  if (/\b(war|invasion|missile|airstrike|nuclear|massacre|atrocity|kill(?:ed|s)?)\b/i.test(text))
-    return "critical";
-  if (CONFLICT_RX.test(text) || /\bsanctions?|blockade|embargo\b/i.test(text)) return "high";
-  if (/\b(protest|tension|negotiat|summit|talks|ceasefire|sanction|tariff)\b/i.test(text))
-    return "medium";
-  return "low";
+  return deriveArticleSeverity(article.title, article.summary);
 }
 
 const SEVERITY_RANK: Record<RiskLevel, number> = { critical: 4, high: 3, medium: 2, low: 1 };
@@ -80,14 +85,20 @@ function buildMetrics(articles: NewsItem[]): DashboardMetric[] {
   if (articles.length === 0) {
     return [
       { label: "Active Conflicts", value: "—" },
-      { label: "Critical Alerts", value: "—" },
+      { label: "Priority Alerts", value: "—" },
       { label: "Countries Monitored", value: "—" },
       { label: "Sources Today", value: "—" },
     ];
   }
-  const activeConflicts = articles.filter((a) =>
-    CONFLICT_RX.test(`${a.title} ${a.summary ?? ""}`),
-  ).length;
+  // const activeConflicts = articles.filter((a) =>
+  //   CONFLICT_RX.test(`${a.title} ${a.summary ?? ""}`),
+  // ).length;
+
+  const activeConflicts = articles.filter((a) => {
+    const sev = deriveSeverity(a);
+
+    return sev === "critical" || sev === "high";
+  }).length;
 
   const alerts = generateLocalAlerts(
     articles.map((a) => ({
@@ -97,8 +108,9 @@ function buildMetrics(articles: NewsItem[]): DashboardMetric[] {
       pubDate: a.pubDate,
     })),
   );
-  const criticalAlerts = alerts.filter((al) => al.severity === "Critical" || al.severity === "High")
-    .length;
+  const criticalAlerts = alerts.filter(
+    (al) => al.severity === "Critical" || al.severity === "High",
+  ).length;
 
   const countries = new Set<string>();
   for (const a of articles) {
@@ -138,15 +150,22 @@ function formatLastSyncIST(date: Date): string {
 function Dashboard() {
   const { articles, loading, refreshing, error, reload } = useArticles();
 
-  const [now, setNow] = useState<Date>(() => new Date());
+  //const [now, setNow] = useState<Date>(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60 * 1000);
+    setNow(new Date());
+
+    const id = setInterval(() => {
+      setNow(new Date());
+    }, 60000);
+
     return () => clearInterval(id);
   }, []);
 
   const breaking = useMemo(() => buildBreakingNews(articles), [articles]);
   const metrics = useMemo(() => buildMetrics(articles), [articles]);
-  const lastSync = useMemo(() => formatLastSyncIST(now), [now]);
+  //const lastSync = useMemo(() => formatLastSyncIST(now), [now]);
+  const lastSync = now ? formatLastSyncIST(now) : "--";
 
   return (
     <AppLayout>

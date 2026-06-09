@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { deriveArticleSeverity } from "./risk-engine";
 
 const RSS_FEED_ARTICLE_LIMIT = 20;
 
@@ -45,26 +46,34 @@ export function generateLocalAlerts(
 ): StrategicAlert[] {
   const alerts: StrategicAlert[] = [];
 
+  const severityMap = {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    critical: "Critical",
+  } as const;
+
   for (let i = 0; i < articles.length; i++) {
     const article = articles[i];
+
     const text = `${article.title} ${article.summary ?? ""}`.toLowerCase();
 
-    let category: AlertCategory = "Diplomatic Tension";
-    let severity: AlertSeverity = "Low";
+    const derived = deriveArticleSeverity(article.title, article.summary);
 
-    if (/war|attack|missile|invasion|military strike/i.test(text)) {
-      severity = "Critical";
+    const severity: AlertSeverity = severityMap[derived];
+
+    let category: AlertCategory = "Diplomatic Tension";
+
+    if (derived === "critical") {
       category = "Military Escalation";
-    } else if (/conflict|troop movement|sanctions|blockade/i.test(text)) {
-      severity = "High";
-      category = /sanctions|blockade/i.test(text)
+    } else if (derived === "high") {
+      category = /sanctions|embargo|tariff|blockade/i.test(text)
         ? "Economic Disruption"
-        : /troop movement/i.test(text)
-          ? "Military Escalation"
-          : "Emerging Conflict";
-    } else if (/tension|protest|instability/i.test(text)) {
-      severity = "Medium";
-      category = /protest|instability/i.test(text) ? "Emerging Conflict" : "Diplomatic Tension";
+        : "Military Escalation";
+    } else if (/protest|instability|riot|unrest|coup/i.test(text)) {
+      category = "Emerging Conflict";
+    } else if (/summit|ceasefire|negotiat|talks|diplomatic/i.test(text)) {
+      category = "Diplomatic Tension";
     }
 
     alerts.push({
@@ -76,7 +85,18 @@ export function generateLocalAlerts(
     });
   }
 
-  return alerts.slice(0, 10);
+  return alerts
+    .sort((a, b) => {
+      const rank = {
+        Critical: 4,
+        High: 3,
+        Medium: 2,
+        Low: 1,
+      };
+
+      return rank[b.severity] - rank[a.severity];
+    })
+    .slice(0, 10);
 }
 
 export const synthesizeStrategicAlerts = createServerFn({ method: "POST" })

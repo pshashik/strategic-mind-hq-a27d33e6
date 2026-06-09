@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateLocalArticleAnalysis } from "@/lib/local-article-analysis";
@@ -6,6 +5,39 @@ import type { AIErrorCode } from "@/lib/ai-errors";
 import { getGeminiModel } from "@/lib/gemini";
 import { getFriendlyGeminiError } from "@/lib/gemini-errors";
 import { getLatestNews } from "@/lib/news.functions";
+import { calculateFeedRelevance } from "./feed-relevance";
+
+const generalPrompt = `
+You are StrategicMind AI.
+
+The user question is NOT covered by the current intelligence feed.
+
+IMPORTANT:
+
+Do NOT pretend the intelligence feed contains information about the topic.
+
+Answer using general geopolitical, military, diplomatic, economic, and security knowledge.
+
+Clearly state:
+
+"Assessment based on strategic knowledge rather than current intelligence feed reporting."
+
+OUTPUT FORMAT
+
+# Executive Summary
+
+# Strategic Context
+
+# Risk Assessment
+
+# Outlook
+
+# Intelligence Confidence
+
+Use professional intelligence-briefing language.
+
+Maximum 500 words.
+`;
 
 const MessageSchema = z.object({
   role: z.enum(["user", "model"]),
@@ -90,6 +122,7 @@ export const askAssistant = createServerFn({
 
         const newsResponse = await getLatestNews();
         const articles = newsResponse.items ?? [];
+        const relevance = calculateFeedRelevance(data.question, articles);
 
         const intelligenceFeed = articles
           .slice(0, 15)
@@ -103,7 +136,7 @@ Summary: ${article.summary}
           )
           .join("\n");
 
-          const flashLitePrompt = `
+        const flashLitePrompt = `
 You are StrategicMind AI.
 
 ROLE
@@ -242,7 +275,7 @@ DO NOT
 Return valid markdown only.
 `;
 
-const flashPrompt = `You are StrategicMind AI.
+        const flashPrompt = `You are StrategicMind AI.
 
 You are a senior geopolitical intelligence analyst producing briefing-grade strategic intelligence assessments.
 
@@ -502,19 +535,27 @@ STYLE REQUIREMENTS
 The response should read like a professional intelligence briefing prepared for senior decision-makers.
 `;
 
-        const model = getGeminiModel(
-  data.model
-);
+        const model = getGeminiModel(data.model);
 
-const prompt =
-  data.model === "gemini-2.5-flash-lite"
-    ? flashLitePrompt
-    : flashPrompt;
+        //const prompt = data.model === "gemini-2.5-flash-lite" ? flashLitePrompt : flashPrompt;
 
-const result =
-  await model.generateContent(
-    prompt
-  );
+        let prompt: string;
+
+        if (relevance.mode === "general") {
+          prompt = `
+${generalPrompt}
+
+QUESTION:
+${data.question}
+
+CONVERSATION:
+${historyText}
+`;
+        } else {
+          prompt = data.model === "gemini-2.5-flash-lite" ? flashLitePrompt : flashPrompt;
+        }
+
+        const result = await model.generateContent(prompt);
 
         const text = result?.response?.text?.();
 
@@ -542,14 +583,13 @@ const result =
 
 export const simulateScenario = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ScenarioInputSchema.parse(input))
-  .handler(
-    async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
-      try {
-        const scenario = data.scenario.trim();
+  .handler(async ({ data }): Promise<{ result: ScenarioResult | null; error: string | null }> => {
+    try {
+      const scenario = data.scenario.trim();
 
-        const model = getGeminiModel(data.model); // or flash-lite
-        
-        const prompt = `
+      const model = getGeminiModel(data.model); // or flash-lite
+
+      const prompt = `
 You are StrategicMind AI Scenario Simulator.
 
 SCENARIO INPUT:
@@ -571,24 +611,24 @@ RULES:
 - Keep language concise, briefing‑style.
 `;
 
+      const result = await model.generateContent(prompt);
+      let text = result?.response?.text?.();
 
-        const result = await model.generateContent(prompt);
-        let text = result?.response?.text?.();
-
-        if (!text) {
-          return { result: null, error: "Empty response from Gemini." };
-        }
-        // Remove markdown fences if present
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(text); // Expect Gemini to return JSON
-        return { result: parsed, error: null };
-      } catch (err) {
-        console.error("[Scenario Gemini Error]", err);
-        return { result: null, error: getFriendlyGeminiError(err) };
+      if (!text) {
+        return { result: null, error: "Empty response from Gemini." };
       }
+      // Remove markdown fences if present
+      text = text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+      const parsed = JSON.parse(text); // Expect Gemini to return JSON
+      return { result: parsed, error: null };
+    } catch (err) {
+      console.error("[Scenario Gemini Error]", err);
+      return { result: null, error: getFriendlyGeminiError(err) };
     }
-  );
-
+  });
 
 export const analyzeArticle = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ArticleInputSchema.parse(input))

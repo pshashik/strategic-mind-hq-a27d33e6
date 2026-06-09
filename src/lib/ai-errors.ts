@@ -19,10 +19,8 @@ export interface AIError {
 }
 
 const ERROR_MESSAGES: Record<AIErrorCode, string> = {
-  RATE_LIMIT:
-    "AI analysis temporarily unavailable due to quota limits. Please try again later.",
-  OVERLOADED:
-    "AI service is experiencing unusually high demand. Please try again shortly.",
+  RATE_LIMIT: "AI analysis temporarily unavailable due to quota limits. Please try again later.",
+  OVERLOADED: "AI service is experiencing unusually high demand. Please try again shortly.",
   INTERNAL: "Internal intelligence service error.",
   NETWORK: "Unable to reach intelligence service. Check your connection.",
   TIMEOUT: "Analysis request timed out. Please retry.",
