@@ -90,16 +90,15 @@ function buildMetrics(articles: NewsItem[]): DashboardMetric[] {
       { label: "Sources Today", value: "—" },
     ];
   }
-  // const activeConflicts = articles.filter((a) =>
-  //   CONFLICT_RX.test(`${a.title} ${a.summary ?? ""}`),
-  // ).length;
+  // ACTIVE CONFLICTS: kinetic/armed-conflict topical filter (independent of severity scoring)
+  const CONFLICT_TOPIC_RX =
+    /\b(war|armed conflict|military|insurgen\w*|border clash\w*|terror\w*|missile|airstrike|air strike|naval|skirmish|battle|shelling|bombard\w*|troops?|invasion)\b/i;
+  const conflictArticles = articles.filter((a) =>
+    CONFLICT_TOPIC_RX.test(`${a.title} ${a.summary ?? ""}`),
+  );
+  const activeConflicts = conflictArticles.length;
 
-  const activeConflicts = articles.filter((a) => {
-    const sev = deriveSeverity(a);
-
-    return sev === "critical" || sev === "high";
-  }).length;
-
+  // PRIORITY ALERTS: severity-based (Critical/High) regardless of topic
   const alerts = generateLocalAlerts(
     articles.map((a) => ({
       id: a.id,
@@ -108,9 +107,30 @@ function buildMetrics(articles: NewsItem[]): DashboardMetric[] {
       pubDate: a.pubDate,
     })),
   );
-  const criticalAlerts = alerts.filter(
+  const priorityAlertItems = alerts.filter(
     (al) => al.severity === "Critical" || al.severity === "High",
-  ).length;
+  );
+  const criticalAlerts = priorityAlertItems.length;
+
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.groupCollapsed(
+      `[KPI] Active Conflicts: ${activeConflicts} | Priority Alerts: ${criticalAlerts}`,
+    );
+    // eslint-disable-next-line no-console
+    console.log("Active Conflicts contributors:", conflictArticles.map((a) => a.title));
+    // eslint-disable-next-line no-console
+    console.log(
+      "Priority Alerts contributors:",
+      priorityAlertItems.map((a) => `[${a.severity}] ${a.title}`),
+    );
+    if (activeConflicts === criticalAlerts) {
+      // eslint-disable-next-line no-console
+      console.log("Counts match coincidentally — distinct selectors produced same total.");
+    }
+    // eslint-disable-next-line no-console
+    console.groupEnd();
+  }
 
   const countries = new Set<string>();
   for (const a of articles) {
