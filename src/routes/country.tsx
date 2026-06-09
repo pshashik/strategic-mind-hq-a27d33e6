@@ -362,7 +362,7 @@ function CountryPage() {
                             key={a.id}
                             className="flex gap-4 p-3 rounded-md bg-background/40 border border-border/60"
                           >
-                            <div className="text-xs text-muted-foreground w-24 shrink-0">
+                            <div className="text-xs text-muted-foreground w-24 shrink-0" suppressHydrationWarning>
                               {formatRelative(a.pubDate)}
                             </div>
                             <div className="flex-1 text-sm">
