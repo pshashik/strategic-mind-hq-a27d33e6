@@ -82,7 +82,7 @@ function AlertItem({ alert, fallbackTs }: { alert: StrategicAlert; fallbackTs?: 
           </span>
           <span className="text-muted-foreground">{alert.category}</span>
           <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">{timestamp}</span>
+          <span className="text-muted-foreground" suppressHydrationWarning>{timestamp}</span>
         </div>
       </div>
     </li>

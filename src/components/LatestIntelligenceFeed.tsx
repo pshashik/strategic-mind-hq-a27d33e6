@@ -67,7 +67,7 @@ export function LatestIntelligenceFeed({ articles, loading, refreshing, error, o
                   >
                     {n.source}
                   </span>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[11px] text-muted-foreground" suppressHydrationWarning>
                     {formatRelative(n.pubDate)}
                   </span>
                 </div>
