@@ -226,7 +226,7 @@ function Dashboard() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-3">
                         <h3 className="text-sm font-medium truncate">{n.title}</h3>
-                        <span className="text-[11px] text-muted-foreground shrink-0">{n.time}</span>
+                        <span className="text-[11px] text-muted-foreground shrink-0" suppressHydrationWarning>{n.time}</span>
                       </div>
                       {n.summary && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
