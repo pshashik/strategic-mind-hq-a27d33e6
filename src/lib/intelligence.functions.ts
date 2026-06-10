@@ -687,7 +687,11 @@ The response should read like a professional intelligence briefing prepared for 
 
         let prompt: string;
 
-        if (relevance.mode === "general") {
+        if (data.model === "gemini-2.5-flash") {
+          // Flash handles relevance tiers (High / Partial / No Relevant) internally
+          // via the 3-tier model in flashPrompt — do not short-circuit to generalPrompt.
+          prompt = flashPrompt;
+        } else if (relevance.mode === "general") {
           prompt = `
 ${generalPrompt}
 
@@ -698,7 +702,7 @@ CONVERSATION:
 ${historyText}
 `;
         } else {
-          prompt = data.model === "gemini-2.5-flash-lite" ? flashLitePrompt : flashPrompt;
+          prompt = flashLitePrompt;
         }
 
         const result = await model.generateContent(prompt);
