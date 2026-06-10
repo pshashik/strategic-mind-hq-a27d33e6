@@ -549,31 +549,9 @@ Every section must contribute unique analytical value.
 INFORMATION GAP DETECTION
 ==================================================
 
-If the user's question is not supported by the intelligence feed:
+Apply Information Gap ONLY when the relevance classification above is "No Relevant Intelligence".
 
-Return:
-
-# Executive Summary
-
-No relevant intelligence was identified in the current intelligence feed regarding this topic.
-
-# Known Limitations
-
-Brief explanation.
-
-# Recommended Monitoring Areas
-
-3-5 monitoring recommendations.
-
-# Intelligence Confidence
-
-Low
-
-# Intelligence Sources Used
-
-Sources reviewed.
-
-Do not generate the full briefing structure.
+For "Partial Relevance" cases, follow the Partial Relevance format in BEHAVIOR RULES and do NOT return Information Gap.
 
 ==================================================
 
