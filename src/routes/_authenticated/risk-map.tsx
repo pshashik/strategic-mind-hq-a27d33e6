@@ -14,7 +14,7 @@ import {
   type RiskMapBand,
 } from "@/lib/risk-map";
 
-export const Route = createFileRoute("/risk-map")({
+export const Route = createFileRoute("/_authenticated/risk-map")({
   head: () => ({ meta: [{ title: "Global Risk Map - StrategicMind AI" }] }),
   component: RiskMap,
 });

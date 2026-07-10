@@ -14,7 +14,7 @@ import { buildExecutiveSummaryMetrics } from "@/lib/simple-briefing";
 import type { RiskLevel } from "@/lib/mock-data";
 import { deriveArticleSeverity } from "@/lib/risk-engine";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard — StrategicMind AI" }] }),
   component: Dashboard,
 });

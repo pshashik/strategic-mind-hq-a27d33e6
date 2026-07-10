@@ -9,122 +9,128 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SimulatorRouteImport } from './routes/simulator'
-import { Route as RiskMapRouteImport } from './routes/risk-map'
-import { Route as CountryRouteImport } from './routes/country'
-import { Route as AssistantRouteImport } from './routes/assistant'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
+import { Route as AuthenticatedRiskMapRouteImport } from './routes/_authenticated/risk-map'
+import { Route as AuthenticatedCountryRouteImport } from './routes/_authenticated/country'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 
-const SimulatorRoute = SimulatorRouteImport.update({
-  id: '/simulator',
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/_authenticated/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSimulatorRoute = AuthenticatedSimulatorRouteImport.update({
+  id: '/_authenticated/simulator',
   path: '/simulator',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RiskMapRoute = RiskMapRouteImport.update({
-  id: '/risk-map',
+const AuthenticatedRiskMapRoute = AuthenticatedRiskMapRouteImport.update({
+  id: '/_authenticated/risk-map',
   path: '/risk-map',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CountryRoute = CountryRouteImport.update({
-  id: '/country',
+const AuthenticatedCountryRoute = AuthenticatedCountryRouteImport.update({
+  id: '/_authenticated/country',
   path: '/country',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AssistantRoute = AssistantRouteImport.update({
-  id: '/assistant',
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/_authenticated/assistant',
   path: '/assistant',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
-  '/country': typeof CountryRoute
-  '/risk-map': typeof RiskMapRoute
-  '/simulator': typeof SimulatorRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
+  '/country': typeof AuthenticatedCountryRoute
+  '/risk-map': typeof AuthenticatedRiskMapRoute
+  '/simulator': typeof AuthenticatedSimulatorRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
-  '/country': typeof CountryRoute
-  '/risk-map': typeof RiskMapRoute
-  '/simulator': typeof SimulatorRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
+  '/country': typeof AuthenticatedCountryRoute
+  '/risk-map': typeof AuthenticatedRiskMapRoute
+  '/simulator': typeof AuthenticatedSimulatorRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/assistant': typeof AssistantRoute
-  '/country': typeof CountryRoute
-  '/risk-map': typeof RiskMapRoute
-  '/simulator': typeof SimulatorRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
+  '/_authenticated/country': typeof AuthenticatedCountryRoute
+  '/_authenticated/risk-map': typeof AuthenticatedRiskMapRoute
+  '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
+  fullPaths: '/assistant' | '/country' | '/risk-map' | '/simulator' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
-  id: '__root__' | '/' | '/assistant' | '/country' | '/risk-map' | '/simulator'
+  to: '/assistant' | '/country' | '/risk-map' | '/simulator' | '/'
+  id:
+    | '__root__'
+    | '/_authenticated/assistant'
+    | '/_authenticated/country'
+    | '/_authenticated/risk-map'
+    | '/_authenticated/simulator'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AssistantRoute: typeof AssistantRoute
-  CountryRoute: typeof CountryRoute
-  RiskMapRoute: typeof RiskMapRoute
-  SimulatorRoute: typeof SimulatorRoute
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
+  AuthenticatedCountryRoute: typeof AuthenticatedCountryRoute
+  AuthenticatedRiskMapRoute: typeof AuthenticatedRiskMapRoute
+  AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/simulator': {
-      id: '/simulator'
-      path: '/simulator'
-      fullPath: '/simulator'
-      preLoaderRoute: typeof SimulatorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/risk-map': {
-      id: '/risk-map'
-      path: '/risk-map'
-      fullPath: '/risk-map'
-      preLoaderRoute: typeof RiskMapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/country': {
-      id: '/country'
-      path: '/country'
-      fullPath: '/country'
-      preLoaderRoute: typeof CountryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assistant': {
-      id: '/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AssistantRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/simulator': {
+      id: '/_authenticated/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof AuthenticatedSimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/risk-map': {
+      id: '/_authenticated/risk-map'
+      path: '/risk-map'
+      fullPath: '/risk-map'
+      preLoaderRoute: typeof AuthenticatedRiskMapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/country': {
+      id: '/_authenticated/country'
+      path: '/country'
+      fullPath: '/country'
+      preLoaderRoute: typeof AuthenticatedCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AssistantRoute: AssistantRoute,
-  CountryRoute: CountryRoute,
-  RiskMapRoute: RiskMapRoute,
-  SimulatorRoute: SimulatorRoute,
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
+  AuthenticatedCountryRoute: AuthenticatedCountryRoute,
+  AuthenticatedRiskMapRoute: AuthenticatedRiskMapRoute,
+  AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -19,7 +19,7 @@ import remarkGfm from "remark-gfm";
 import { getLatestNews, NewsItem } from "@/lib/news.functions";
 import { formatRelative, formatRelativeShort } from "@/lib/news-service";
 
-export const Route = createFileRoute("/assistant")({
+export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({ meta: [{ title: "Research Assistant — StrategicMind AI" }] }),
   component: Assistant,
 });
