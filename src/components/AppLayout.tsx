@@ -1,4 +1,5 @@
-import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -7,10 +8,12 @@ import {
   GitBranch,
   //Radar,
   Bell,
+  LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./GlobalSearch";
+import { supabase } from "@/integrations/supabase/client";
 import company_logo from "../assets/logo.png";
 
 const nav = [
@@ -23,6 +26,14 @@ const nav = [
 
 export function AppLayout({ children }: { children?: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
   return (
     <div className="min-h-screen flex w-full">
       <aside className="hidden md:flex w-64 flex-col border-r border-sidebar-border bg-sidebar/80 backdrop-blur-xl">
@@ -81,6 +92,13 @@ export function AppLayout({ children }: { children?: ReactNode }) {
             <button className="relative p-2 rounded-md hover:bg-accent/40">
               <Bell className="size-4" />
               <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-risk-critical" />
+            </button>
+            <button
+              onClick={handleSignOut}
+              title="Sign out"
+              className="p-2 rounded-md hover:bg-accent/40"
+            >
+              <LogOut className="size-4" />
             </button>
             <div className="size-8 rounded-full bg-linear-to-br from-primary/60 to-accent flex items-center justify-center text-xs font-medium text-primary-foreground">
               SP
