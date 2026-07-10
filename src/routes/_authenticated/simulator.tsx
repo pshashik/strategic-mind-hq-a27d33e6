@@ -16,7 +16,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { simulateScenario, type ScenarioResult } from "@/lib/intelligence.functions";
 import { classifyAIError, aiErrorMessage } from "@/lib/ai-errors";
 
-export const Route = createFileRoute("/simulator")({
+export const Route = createFileRoute("/_authenticated/simulator")({
   head: () => ({ meta: [{ title: "Scenario Simulator — StrategicMind AI" }] }),
   component: Simulator,
 });

@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Flag, Activity, FileText, AlertTriangle, ExternalLink } from "lucide-react";
 import type { RiskLevel } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/country")({
+export const Route = createFileRoute("/_authenticated/country")({
   head: () => ({ meta: [{ title: "Country Intelligence — StrategicMind AI" }] }),
   validateSearch: (search: Record<string, unknown>) => ({
     code: typeof search.code === "string" ? search.code.toUpperCase() : undefined,
